@@ -1,0 +1,792 @@
+{
+  "info": {
+    "name": "Watafl API",
+    "_postman_id": "watafl-api-collection",
+    "description": "# Watafl API Collection\n\nمجموعة كاملة لكل endpoints الخاصة بمشروع Watafl.\n\n## الـ Authentication\nالمشروع يستخدم **Laravel Sanctum** (Bearer Token).\n\n### Super Admin\n- Login بالـ email والـ password\n- بعد الـ login استخدم الـ token في header: `Authorization: Bearer {token}`\n\n### Company\n- Login بالـ tax_number والـ password\n- بعد الـ login استخدم الـ token في header: `Authorization: Bearer {token}`\n\n## الـ Base URL\n```\nhttp://localhost:8000/api\n```\n\n## ملاحظات\n- endpoints اللي بترفع صور تستخدم `form-data`\n- endpoints التانية تستخدم `JSON`\n- Super Admin الافتراضي: `admin@watafl.com` / `Admin@1234`",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000/api",
+      "type": "string"
+    },
+    {
+      "key": "super_admin_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "company_token",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Super Admin",
+      "description": "كل الـ endpoints الخاصة بالسوبر أدمن — المصادقة وإدارة الشركات والموردين والمنتجات.",
+      "item": [
+        {
+          "name": "Auth",
+          "description": "تسجيل الدخول والخروج والبيانات الشخصية للسوبر أدمن.",
+          "item": [
+            {
+              "name": "Login",
+              "request": {
+                "method": "POST",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Content-Type", "value": "application/json" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"admin@watafl.com\",\n  \"password\": \"Admin@1234\"\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "url": {
+                  "raw": "{{base_url}}/super-admin/login",
+                  "host": ["{{base_url}}"],
+                  "path": ["super-admin", "login"]
+                },
+                "description": "تسجيل دخول السوبر أدمن بالـ email والـ password.\n\n**Response:** يرجع `token` يُستخدم في كل الـ requests التانية.\n\n**ملاحظة:** احفظ الـ token في المتغير `super_admin_token`."
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "var res = pm.response.json();",
+                      "if (res.token) {",
+                      "    pm.collectionVariables.set('super_admin_token', res.token);",
+                      "    console.log('Super Admin token saved:', res.token);",
+                      "}"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Logout",
+              "request": {
+                "method": "POST",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{super_admin_token}}" }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/super-admin/logout",
+                  "host": ["{{base_url}}"],
+                  "path": ["super-admin", "logout"]
+                },
+                "description": "تسجيل خروج السوبر أدمن وحذف الـ token الحالي."
+              }
+            },
+            {
+              "name": "Me (بياناتي)",
+              "request": {
+                "method": "GET",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{super_admin_token}}" }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/super-admin/me",
+                  "host": ["{{base_url}}"],
+                  "path": ["super-admin", "me"]
+                },
+                "description": "جلب بيانات السوبر أدمن المسجل دخوله حاليًا."
+              }
+            }
+          ]
+        },
+        {
+          "name": "Governorates",
+          "description": "جلب قائمة المحافظات المصرية الـ 27 — مستخدمة عند إنشاء شركة.",
+          "item": [
+            {
+              "name": "Get All Governorates",
+              "request": {
+                "method": "GET",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{super_admin_token}}" }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/super-admin/governorates",
+                  "host": ["{{base_url}}"],
+                  "path": ["super-admin", "governorates"]
+                },
+                "description": "جلب كل المحافظات المصرية الـ 27 مرتبة أبجديًا.\n\n**Response fields:**\n- `id` — معرّف المحافظة (يُستخدم عند إنشاء شركة)\n- `name_ar` — الاسم بالعربي\n- `name_en` — الاسم بالإنجليزي"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Companies",
+          "description": "إدارة الشركات — إنشاء وتعديل وحذف وتفعيل/تعطيل.",
+          "item": [
+            {
+              "name": "Get All Companies",
+              "request": {
+                "method": "GET",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{super_admin_token}}" }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/super-admin/companies?page=1",
+                  "host": ["{{base_url}}"],
+                  "path": ["super-admin", "companies"],
+                  "query": [{ "key": "page", "value": "1", "description": "رقم الصفحة (15 شركة لكل صفحة)" }]
+                },
+                "description": "جلب كل الشركات مع pagination (15 لكل صفحة).\n\n**Response fields:**\n- `data[]` — مصفوفة الشركات\n- `meta.total` — إجمالي عدد الشركات\n- `meta.last_page` — آخر رقم صفحة"
+              }
+            },
+            {
+              "name": "Create Company",
+              "request": {
+                "method": "POST",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{super_admin_token}}" }
+                ],
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    { "key": "name", "value": "شركة الأمل للمياه", "type": "text", "description": "اسم الشركة (مطلوب)" },
+                    { "key": "tax_number", "value": "TAX-2024-001", "type": "text", "description": "الرقم الضريبي الفريد — يُستخدم لتسجيل الدخول (مطلوب)" },
+                    { "key": "password", "value": "Company@1234", "type": "text", "description": "كلمة المرور (8 أحرف على الأقل، مطلوب)" },
+                    { "key": "governorate_id", "value": "1", "type": "text", "description": "ID المحافظة من endpoint الـ governorates (مطلوب)" },
+                    { "key": "logo", "value": "", "type": "file", "description": "شعار الشركة — صورة jpg/png/webp بحد أقصى 2MB (اختياري)" },
+                    { "key": "is_active", "value": "1", "type": "text", "description": "1 = مفعّل، 0 = معطّل (اختياري، افتراضي 1)" }
+                  ]
+                },
+                "url": {
+                  "raw": "{{base_url}}/super-admin/companies",
+                  "host": ["{{base_url}}"],
+                  "path": ["super-admin", "companies"]
+                },
+                "description": "إنشاء شركة جديدة.\n\n**ملاحظة مهمة:** استخدم `form-data` مش JSON لأن فيه رفع صورة.\n\n**Validation:**\n- `name` — مطلوب\n- `tax_number` — مطلوب وفريد (هيُستخدم لتسجيل دخول الشركة)\n- `password` — مطلوب، 8 أحرف على الأقل\n- `governorate_id` — مطلوب، موجود في جدول المحافظات"
+              }
+            },
+            {
+              "name": "Get Company",
+              "request": {
+                "method": "GET",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{super_admin_token}}" }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/super-admin/companies/1",
+                  "host": ["{{base_url}}"],
+                  "path": ["super-admin", "companies", "1"]
+                },
+                "description": "جلب بيانات شركة معينة بالـ ID مع بيانات المحافظة التابعة لها."
+              }
+            },
+            {
+              "name": "Update Company",
+              "request": {
+                "method": "POST",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{super_admin_token}}" }
+                ],
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    { "key": "name", "value": "شركة الأمل المحدثة", "type": "text", "description": "اسم الشركة الجديد (اختياري)" },
+                    { "key": "tax_number", "value": "TAX-2024-001-NEW", "type": "text", "description": "الرقم الضريبي الجديد (اختياري)" },
+                    { "key": "password", "value": "NewPass@1234", "type": "text", "description": "كلمة المرور الجديدة (اختياري)" },
+                    { "key": "governorate_id", "value": "2", "type": "text", "description": "ID المحافظة الجديدة (اختياري)" },
+                    { "key": "logo", "value": "", "type": "file", "description": "شعار جديد — هيستبدل القديم تلقائيًا (اختياري)" },
+                    { "key": "is_active", "value": "1", "type": "text", "description": "1 أو 0 (اختياري)" }
+                  ]
+                },
+                "url": {
+                  "raw": "{{base_url}}/super-admin/companies/1",
+                  "host": ["{{base_url}}"],
+                  "path": ["super-admin", "companies", "1"]
+                },
+                "description": "تعديل بيانات شركة. كل الحقول اختيارية — ترسل بس اللي عايز تغيره.\n\n**ملاحظة:** بيستخدم POST مش PUT عشان يدعم رفع الصور مع `_method=PUT` مش مطلوب هنا."
+              }
+            },
+            {
+              "name": "Delete Company",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{super_admin_token}}" }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/super-admin/companies/1",
+                  "host": ["{{base_url}}"],
+                  "path": ["super-admin", "companies", "1"]
+                },
+                "description": "حذف شركة نهائيًا. الشعار بيتحذف من الـ storage تلقائيًا."
+              }
+            },
+            {
+              "name": "Toggle Company Status",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{super_admin_token}}" }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/super-admin/companies/1/toggle-status",
+                  "host": ["{{base_url}}"],
+                  "path": ["super-admin", "companies", "1", "toggle-status"]
+                },
+                "description": "تفعيل أو تعطيل شركة. لو كانت مفعّلة تعطّل والعكس.\n\n**Response:** يرجع `is_active` الجديد ورسالة توضيحية."
+              }
+            }
+          ]
+        },
+        {
+          "name": "Suppliers",
+          "description": "إدارة الموردين (الراعيين) — مثل أكوا للمياه وغيرها.",
+          "item": [
+            {
+              "name": "Get All Suppliers",
+              "request": {
+                "method": "GET",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{super_admin_token}}" }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/super-admin/suppliers?page=1",
+                  "host": ["{{base_url}}"],
+                  "path": ["super-admin", "suppliers"],
+                  "query": [{ "key": "page", "value": "1" }]
+                },
+                "description": "جلب كل الموردين مع عدد منتجاتهم (`products_count`)."
+              }
+            },
+            {
+              "name": "Create Supplier",
+              "request": {
+                "method": "POST",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{super_admin_token}}" }
+                ],
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    { "key": "name", "value": "أكوا للمياه", "type": "text", "description": "اسم المورد (مطلوب)" },
+                    { "key": "description", "value": "مورد متخصص في منتجات المياه المعبأة", "type": "text", "description": "وصف المورد (اختياري)" },
+                    { "key": "logo", "value": "", "type": "file", "description": "شعار المورد — jpg/png/webp بحد أقصى 2MB (اختياري)" }
+                  ]
+                },
+                "url": {
+                  "raw": "{{base_url}}/super-admin/suppliers",
+                  "host": ["{{base_url}}"],
+                  "path": ["super-admin", "suppliers"]
+                },
+                "description": "إنشاء مورد جديد."
+              }
+            },
+            {
+              "name": "Get Supplier",
+              "request": {
+                "method": "GET",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{super_admin_token}}" }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/super-admin/suppliers/1",
+                  "host": ["{{base_url}}"],
+                  "path": ["super-admin", "suppliers", "1"]
+                },
+                "description": "جلب بيانات مورد معين مع عدد منتجاته."
+              }
+            },
+            {
+              "name": "Update Supplier",
+              "request": {
+                "method": "POST",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{super_admin_token}}" }
+                ],
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    { "key": "name", "value": "أكوا للمياه والمشروبات", "type": "text", "description": "اسم المورد الجديد (اختياري)" },
+                    { "key": "description", "value": "وصف محدث", "type": "text", "description": "الوصف الجديد (اختياري)" },
+                    { "key": "logo", "value": "", "type": "file", "description": "شعار جديد (اختياري)" }
+                  ]
+                },
+                "url": {
+                  "raw": "{{base_url}}/super-admin/suppliers/1",
+                  "host": ["{{base_url}}"],
+                  "path": ["super-admin", "suppliers", "1"]
+                },
+                "description": "تعديل بيانات مورد. كل الحقول اختيارية."
+              }
+            },
+            {
+              "name": "Delete Supplier",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{super_admin_token}}" }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/super-admin/suppliers/1",
+                  "host": ["{{base_url}}"],
+                  "path": ["super-admin", "suppliers", "1"]
+                },
+                "description": "حذف مورد. **تنبيه:** حذف المورد بيحذف كل منتجاته تلقائيًا (cascade)."
+              }
+            }
+          ]
+        },
+        {
+          "name": "Supplier Products",
+          "description": "إدارة منتجات الموردين — المنتجات دي بتتاح للشركات تختارها في متجرها.",
+          "item": [
+            {
+              "name": "Get All Supplier Products",
+              "request": {
+                "method": "GET",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{super_admin_token}}" }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/super-admin/supplier-products?page=1&supplier_id=&is_active=",
+                  "host": ["{{base_url}}"],
+                  "path": ["super-admin", "supplier-products"],
+                  "query": [
+                    { "key": "page", "value": "1", "description": "رقم الصفحة" },
+                    { "key": "supplier_id", "value": "", "description": "فلترة حسب المورد (اختياري)" },
+                    { "key": "is_active", "value": "", "description": "فلترة حسب الحالة: 1 أو 0 (اختياري)" }
+                  ]
+                },
+                "description": "جلب منتجات الموردين مع إمكانية الفلترة حسب المورد أو الحالة."
+              }
+            },
+            {
+              "name": "Create Supplier Product",
+              "request": {
+                "method": "POST",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{super_admin_token}}" }
+                ],
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    { "key": "name", "value": "مياه أكوا 1.5 لتر", "type": "text", "description": "اسم المنتج (مطلوب)" },
+                    { "key": "description", "value": "مياه معدنية طبيعية بحجم 1.5 لتر", "type": "text", "description": "وصف المنتج (اختياري)" },
+                    { "key": "price", "value": "5.50", "type": "text", "description": "السعر بالجنيه (مطلوب، رقم موجب)" },
+                    { "key": "supplier_id", "value": "1", "type": "text", "description": "ID المورد (مطلوب)" },
+                    { "key": "image", "value": "", "type": "file", "description": "صورة المنتج — jpg/png/webp بحد أقصى 2MB (اختياري)" },
+                    { "key": "is_active", "value": "1", "type": "text", "description": "1 = متاح، 0 = غير متاح (اختياري، افتراضي 1)" }
+                  ]
+                },
+                "url": {
+                  "raw": "{{base_url}}/super-admin/supplier-products",
+                  "host": ["{{base_url}}"],
+                  "path": ["super-admin", "supplier-products"]
+                },
+                "description": "إضافة منتج جديد لمورد معين.\n\n**بعد الإنشاء:** المنتج يبقى متاحًا لكل الشركات تختاره في متجرها."
+              }
+            },
+            {
+              "name": "Get Supplier Product",
+              "request": {
+                "method": "GET",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{super_admin_token}}" }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/super-admin/supplier-products/1",
+                  "host": ["{{base_url}}"],
+                  "path": ["super-admin", "supplier-products", "1"]
+                },
+                "description": "جلب تفاصيل منتج مورد معين مع بيانات المورد التابع له."
+              }
+            },
+            {
+              "name": "Update Supplier Product",
+              "request": {
+                "method": "POST",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{super_admin_token}}" }
+                ],
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    { "key": "name", "value": "مياه أكوا 1.5 لتر - محدث", "type": "text", "description": "اسم المنتج الجديد (اختياري)" },
+                    { "key": "price", "value": "6.00", "type": "text", "description": "السعر الجديد (اختياري)" },
+                    { "key": "description", "value": "وصف محدث", "type": "text", "description": "الوصف الجديد (اختياري)" },
+                    { "key": "supplier_id", "value": "1", "type": "text", "description": "ID المورد الجديد (اختياري)" },
+                    { "key": "image", "value": "", "type": "file", "description": "صورة جديدة (اختياري)" },
+                    { "key": "is_active", "value": "1", "type": "text", "description": "1 أو 0 (اختياري)" }
+                  ]
+                },
+                "url": {
+                  "raw": "{{base_url}}/super-admin/supplier-products/1",
+                  "host": ["{{base_url}}"],
+                  "path": ["super-admin", "supplier-products", "1"]
+                },
+                "description": "تعديل منتج مورد. كل الحقول اختيارية."
+              }
+            },
+            {
+              "name": "Delete Supplier Product",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{super_admin_token}}" }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/super-admin/supplier-products/1",
+                  "host": ["{{base_url}}"],
+                  "path": ["super-admin", "supplier-products", "1"]
+                },
+                "description": "حذف منتج مورد. الصورة بتتحذف من الـ storage تلقائيًا."
+              }
+            },
+            {
+              "name": "Toggle Product Status",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{super_admin_token}}" }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/super-admin/supplier-products/1/toggle-status",
+                  "host": ["{{base_url}}"],
+                  "path": ["super-admin", "supplier-products", "1", "toggle-status"]
+                },
+                "description": "تفعيل أو إيقاف منتج. لو كان متاحًا بيتوقف والعكس.\n\n**تأثير:** المنتجات الموقوفة لا تظهر للشركات في الـ catalog."
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Company",
+      "description": "كل الـ endpoints الخاصة بالشركة — تسجيل الدخول وإدارة منتجاتها الخاصة واختيار منتجات من كتالوج الموردين.",
+      "item": [
+        {
+          "name": "Auth",
+          "description": "تسجيل الدخول والخروج للشركة.",
+          "item": [
+            {
+              "name": "Login",
+              "request": {
+                "method": "POST",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Content-Type", "value": "application/json" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"tax_number\": \"TAX-2024-001\",\n  \"password\": \"Company@1234\"\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "url": {
+                  "raw": "{{base_url}}/company/login",
+                  "host": ["{{base_url}}"],
+                  "path": ["company", "login"]
+                },
+                "description": "تسجيل دخول الشركة بالـ **tax_number** والـ **password**.\n\n**شروط الدخول:**\n- الـ tax_number والـ password صح\n- الشركة مفعّلة (`is_active = true`)\n\n**Response:** يرجع `token` يُستخدم في كل الـ requests التانية."
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "var res = pm.response.json();",
+                      "if (res.token) {",
+                      "    pm.collectionVariables.set('company_token', res.token);",
+                      "    console.log('Company token saved:', res.token);",
+                      "}"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Logout",
+              "request": {
+                "method": "POST",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{company_token}}" }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/company/logout",
+                  "host": ["{{base_url}}"],
+                  "path": ["company", "logout"]
+                },
+                "description": "تسجيل خروج الشركة وحذف الـ token الحالي."
+              }
+            },
+            {
+              "name": "Me (بياناتي)",
+              "request": {
+                "method": "GET",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{company_token}}" }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/company/me",
+                  "host": ["{{base_url}}"],
+                  "path": ["company", "me"]
+                },
+                "description": "جلب بيانات الشركة المسجلة دخولها مع بيانات المحافظة التابعة لها."
+              }
+            }
+          ]
+        },
+        {
+          "name": "My Products (منتجاتي)",
+          "description": "إدارة المنتجات الخاصة بالشركة — منتجاتها هي مش من كتالوج الموردين.",
+          "item": [
+            {
+              "name": "Get My Products",
+              "request": {
+                "method": "GET",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{company_token}}" }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/company/products?page=1",
+                  "host": ["{{base_url}}"],
+                  "path": ["company", "products"],
+                  "query": [{ "key": "page", "value": "1" }]
+                },
+                "description": "جلب كل المنتجات الخاصة بالشركة المسجلة دخولها."
+              }
+            },
+            {
+              "name": "Add Product",
+              "request": {
+                "method": "POST",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{company_token}}" }
+                ],
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    { "key": "name", "value": "عصير برتقال طبيعي", "type": "text", "description": "اسم المنتج (مطلوب)" },
+                    { "key": "description", "value": "عصير برتقال طازج 100% طبيعي", "type": "text", "description": "وصف المنتج (اختياري)" },
+                    { "key": "price", "value": "15.00", "type": "text", "description": "السعر بالجنيه (مطلوب)" },
+                    { "key": "image", "value": "", "type": "file", "description": "صورة المنتج (اختياري)" },
+                    { "key": "is_active", "value": "1", "type": "text", "description": "1 = متاح، 0 = مخفي (اختياري)" }
+                  ]
+                },
+                "url": {
+                  "raw": "{{base_url}}/company/products",
+                  "host": ["{{base_url}}"],
+                  "path": ["company", "products"]
+                },
+                "description": "إضافة منتج خاص بالشركة."
+              }
+            },
+            {
+              "name": "Get Product",
+              "request": {
+                "method": "GET",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{company_token}}" }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/company/products/1",
+                  "host": ["{{base_url}}"],
+                  "path": ["company", "products", "1"]
+                },
+                "description": "جلب تفاصيل منتج خاص بالشركة. **تأكيد:** الشركة تقدر تشوف منتجاتها بس."
+              }
+            },
+            {
+              "name": "Update Product",
+              "request": {
+                "method": "POST",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{company_token}}" }
+                ],
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    { "key": "name", "value": "عصير برتقال محدث", "type": "text", "description": "اسم جديد (اختياري)" },
+                    { "key": "price", "value": "18.00", "type": "text", "description": "سعر جديد (اختياري)" },
+                    { "key": "description", "value": "وصف محدث", "type": "text", "description": "وصف جديد (اختياري)" },
+                    { "key": "image", "value": "", "type": "file", "description": "صورة جديدة (اختياري)" },
+                    { "key": "is_active", "value": "1", "type": "text", "description": "1 أو 0 (اختياري)" }
+                  ]
+                },
+                "url": {
+                  "raw": "{{base_url}}/company/products/1",
+                  "host": ["{{base_url}}"],
+                  "path": ["company", "products", "1"]
+                },
+                "description": "تعديل منتج خاص بالشركة. الشركة تقدر تعدل منتجاتها بس."
+              }
+            },
+            {
+              "name": "Delete Product",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{company_token}}" }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/company/products/1",
+                  "host": ["{{base_url}}"],
+                  "path": ["company", "products", "1"]
+                },
+                "description": "حذف منتج خاص بالشركة."
+              }
+            }
+          ]
+        },
+        {
+          "name": "Catalog (كتالوج الموردين)",
+          "description": "إدارة المنتجات المختارة من كتالوج الموردين — الشركة تختار المنتجات اللي تعرضها في متجرها.",
+          "item": [
+            {
+              "name": "Get Available Products (كل منتجات الموردين)",
+              "request": {
+                "method": "GET",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{company_token}}" }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/company/catalog/available?page=1&supplier_id=",
+                  "host": ["{{base_url}}"],
+                  "path": ["company", "catalog", "available"],
+                  "query": [
+                    { "key": "page", "value": "1" },
+                    { "key": "supplier_id", "value": "", "description": "فلترة حسب مورد معين (اختياري)" }
+                  ]
+                },
+                "description": "جلب كل منتجات الموردين المتاحة (`is_active = true`) للشركة تختار منها.\n\n**الفلاتر المتاحة:**\n- `supplier_id` — لجلب منتجات مورد معين بس"
+              }
+            },
+            {
+              "name": "Get My Catalog (منتجاتي المختارة)",
+              "request": {
+                "method": "GET",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{company_token}}" }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/company/catalog/mine?page=1",
+                  "host": ["{{base_url}}"],
+                  "path": ["company", "catalog", "mine"],
+                  "query": [{ "key": "page", "value": "1" }]
+                },
+                "description": "جلب المنتجات اللي الشركة اختارتها من كتالوج الموردين وهتظهر في متجرها."
+              }
+            },
+            {
+              "name": "Add Products to My Catalog (إضافة منتجات)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Content-Type", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{company_token}}" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"product_ids\": [1, 2, 3]\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "url": {
+                  "raw": "{{base_url}}/company/catalog/add",
+                  "host": ["{{base_url}}"],
+                  "path": ["company", "catalog", "add"]
+                },
+                "description": "إضافة مجموعة منتجات دفعة واحدة لكتالوج الشركة.\n\n**ملاحظة:** لو المنتج موجود بالفعل في الكتالوج مش هيتكرر (syncWithoutDetaching).\n\n**الحقول:**\n- `product_ids` — مصفوفة IDs المنتجات المراد إضافتها (مطلوب)"
+              }
+            },
+            {
+              "name": "Remove Products from My Catalog (حذف منتجات)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Content-Type", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{company_token}}" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"product_ids\": [1, 2]\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "url": {
+                  "raw": "{{base_url}}/company/catalog/remove",
+                  "host": ["{{base_url}}"],
+                  "path": ["company", "catalog", "remove"]
+                },
+                "description": "إزالة مجموعة منتجات دفعة واحدة من كتالوج الشركة.\n\n**الحقول:**\n- `product_ids` — مصفوفة IDs المنتجات المراد إزالتها (مطلوب)"
+              }
+            },
+            {
+              "name": "Add Single Product to Catalog",
+              "request": {
+                "method": "POST",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{company_token}}" }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/company/catalog/1",
+                  "host": ["{{base_url}}"],
+                  "path": ["company", "catalog", "1"]
+                },
+                "description": "إضافة منتج واحد بالـ ID للكتالوج.\n\n**تحقق:** لو المنتج غير متاح (`is_active = false`) هيرجع خطأ 422."
+              }
+            },
+            {
+              "name": "Remove Single Product from Catalog",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{company_token}}" }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/company/catalog/1",
+                  "host": ["{{base_url}}"],
+                  "path": ["company", "catalog", "1"]
+                },
+                "description": "إزالة منتج واحد بالـ ID من كتالوج الشركة."
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
