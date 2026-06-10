@@ -16,7 +16,7 @@ return new class extends Migration
             $table->decimal('installment_amount', 10, 2);
             $table->timestamps();
 
-            $table->unique(['company_product_id', 'months']);
+            $table->unique(['company_product_id', 'months'], 'cp_install_plans_product_months_uq');
         });
     }
 
