@@ -12,7 +12,7 @@ class CatalogController extends Controller
 {
     public function availableProducts(Request $request): JsonResponse
     {
-        $query = SupplierProduct::with('supplier')->where('is_active', true);
+        $query = SupplierProduct::with(['supplier', 'installmentPlans'])->where('is_active', true);
 
         if ($request->has('supplier_id')) {
             $query->where('supplier_id', $request->supplier_id);
@@ -34,7 +34,7 @@ class CatalogController extends Controller
     public function mycatalog(): JsonResponse
     {
         $company  = auth()->user();
-        $products = $company->catalogProducts()->with('supplier')->paginate(15);
+        $products = $company->catalogProducts()->with(['supplier', 'installmentPlans'])->paginate(15);
 
         return response()->json([
             'data' => SupplierProductResource::collection($products->items()),

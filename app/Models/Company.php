@@ -19,6 +19,7 @@ class Company extends Authenticatable
         'governorate_id',
         'logo',
         'is_active',
+        'wallet_balance',
     ];
 
     protected $hidden = [
@@ -26,8 +27,9 @@ class Company extends Authenticatable
     ];
 
     protected $casts = [
-        'password'  => 'hashed',
-        'is_active' => 'boolean',
+        'password'       => 'hashed',
+        'is_active'      => 'boolean',
+        'wallet_balance' => 'decimal:2',
     ];
 
     public function governorate(): BelongsTo

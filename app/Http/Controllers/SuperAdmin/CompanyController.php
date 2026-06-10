@@ -3,12 +3,15 @@
 namespace App\Http\Controllers\SuperAdmin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\SuperAdmin\AdjustCompanyWalletRequest;
 use App\Http\Requests\SuperAdmin\StoreCompanyRequest;
 use App\Http\Requests\SuperAdmin\UpdateCompanyRequest;
+use App\Http\Requests\SuperAdmin\UpdateCompanyWalletRequest;
 use App\Http\Resources\CompanyResource;
 use App\Models\Company;
 use App\Support\PublicFile;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
 
 class CompanyController extends Controller
 {
@@ -87,6 +90,53 @@ class CompanyController extends Controller
         return response()->json([
             'message'   => $company->is_active ? 'تم تفعيل الشركة' : 'تم تعطيل الشركة',
             'is_active' => $company->is_active,
+        ]);
+    }
+
+    public function showWallet(Company $company): JsonResponse
+    {
+        return response()->json([
+            'data' => [
+                'company_id'     => $company->id,
+                'company_name'   => $company->name,
+                'wallet_balance' => $company->wallet_balance,
+            ],
+        ]);
+    }
+
+    public function updateWallet(UpdateCompanyWalletRequest $request, Company $company): JsonResponse
+    {
+        $company->update($request->validated());
+
+        return response()->json([
+            'message' => 'تم تحديث رصيد المحفظة بنجاح',
+            'data'    => new CompanyResource($company->fresh()->load('governorate')),
+        ]);
+    }
+
+    public function adjustWallet(AdjustCompanyWalletRequest $request, Company $company): JsonResponse
+    {
+        $validated = $request->validated();
+
+        DB::transaction(function () use ($company, $validated) {
+            $company = Company::lockForUpdate()->findOrFail($company->id);
+
+            if ($validated['type'] === 'credit') {
+                $company->increment('wallet_balance', $validated['amount']);
+            } else {
+                if ($company->wallet_balance < $validated['amount']) {
+                    abort(422, 'رصيد المحفظة غير كافٍ');
+                }
+
+                $company->decrement('wallet_balance', $validated['amount']);
+            }
+        });
+
+        return response()->json([
+            'message' => $validated['type'] === 'credit'
+                ? 'تم إضافة الرصيد بنجاح'
+                : 'تم خصم الرصيد بنجاح',
+            'data' => new CompanyResource($company->fresh()->load('governorate')),
         ]);
     }
 }

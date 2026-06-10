@@ -1,0 +1,562 @@
+{
+  "info": {
+    "name": "Watafl — Wallet & Installments",
+    "_postman_id": "watafl-wallet-installments",
+    "description": "# Watafl — المحفظة وخطط التقسيط\n\nمجموعة Postman للميزات الجديدة:\n- **محفظة الشركة** (Super Admin)\n- **منتجات الشركة مع التقسيط** (Company)\n\n## الإعداد\n1. استورد المجموعة في Postman\n2. تأكد أن `base_url` = `http://localhost:8000/api`\n3. شغّل **Super Admin → Auth → Login** لحفظ `super_admin_token`\n4. شغّل **Company → Auth → Login** لحفظ `company_token`\n\n## المتغيرات\n| Variable | الوصف |\n|----------|-------|\n| `base_url` | عنوان الـ API |\n| `super_admin_token` | token السوبر أدمن |\n| `company_token` | token الشركة |\n| `company_id` | ID شركة للاختبار (افتراضي 1) |\n| `product_id` | ID منتج للاختبار (افتراضي 1) |\n\n## التوثيق الكامل\nراجع ملف `FEATURES_WALLET_INSTALLMENTS.md` في المشروع.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:8000/api", "type": "string" },
+    { "key": "super_admin_token", "value": "", "type": "string" },
+    { "key": "company_token", "value": "", "type": "string" },
+    { "key": "company_id", "value": "1", "type": "string" },
+    { "key": "product_id", "value": "1", "type": "string" },
+    { "key": "supplier_product_id", "value": "1", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "Super Admin — Wallet",
+      "description": "إدارة محفظة رصيد الشركات — Super Admin فقط.\n\nعند إنشاء شركة جديدة يبدأ `wallet_balance` بصفر تلقائياً.",
+      "item": [
+        {
+          "name": "Auth",
+          "item": [
+            {
+              "name": "Login",
+              "request": {
+                "method": "POST",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Content-Type", "value": "application/json" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"admin@watafl.com\",\n  \"password\": \"Admin@1234\"\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "url": {
+                  "raw": "{{base_url}}/super-admin/login",
+                  "host": ["{{base_url}}"],
+                  "path": ["super-admin", "login"]
+                },
+                "description": "تسجيل دخول Super Admin.\n\nيحفظ الـ token تلقائياً في `super_admin_token`."
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "var res = pm.response.json();",
+                      "if (res.token) {",
+                      "    pm.collectionVariables.set('super_admin_token', res.token);",
+                      "}"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Get Company Wallet",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{super_admin_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/super-admin/companies/{{company_id}}/wallet",
+              "host": ["{{base_url}}"],
+              "path": ["super-admin", "companies", "{{company_id}}", "wallet"]
+            },
+            "description": "## عرض رصيد محفظة شركة\n\n`GET /super-admin/companies/{company_id}/wallet`\n\n**Response:**\n```json\n{\n  \"data\": {\n    \"company_id\": 1,\n    \"company_name\": \"شركة الأمل\",\n    \"wallet_balance\": \"5000.00\"\n  }\n}\n```"
+          }
+        },
+        {
+          "name": "Set Wallet Balance",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{super_admin_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"wallet_balance\": 5000.00\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/super-admin/companies/{{company_id}}/wallet",
+              "host": ["{{base_url}}"],
+              "path": ["super-admin", "companies", "{{company_id}}", "wallet"]
+            },
+            "description": "## تعيين رصيد المحفظة مباشرة\n\n`PATCH /super-admin/companies/{company_id}/wallet`\n\n| Field | Required | القيود |\n|-------|----------|--------|\n| `wallet_balance` | ✅ | ≥ 0 |\n\n**Response:** يرجع بيانات الشركة كاملة مع `wallet_balance` المحدّث."
+          }
+        },
+        {
+          "name": "Adjust Wallet — Credit (إضافة)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{super_admin_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 250.00,\n  \"type\": \"credit\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/super-admin/companies/{{company_id}}/wallet/adjust",
+              "host": ["{{base_url}}"],
+              "path": ["super-admin", "companies", "{{company_id}}", "wallet", "adjust"]
+            },
+            "description": "## إضافة رصيد للمحفظة\n\n`POST /super-admin/companies/{company_id}/wallet/adjust`\n\n| Field | القيمة |\n|-------|--------|\n| `type` | `credit` |\n| `amount` | المبلغ المُضاف (> 0) |\n\n**Response:** `\"message\": \"تم إضافة الرصيد بنجاح\"`"
+          }
+        },
+        {
+          "name": "Adjust Wallet — Debit (خصم)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{super_admin_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 100.00,\n  \"type\": \"debit\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/super-admin/companies/{{company_id}}/wallet/adjust",
+              "host": ["{{base_url}}"],
+              "path": ["super-admin", "companies", "{{company_id}}", "wallet", "adjust"]
+            },
+            "description": "## خصم رصيد من المحفظة\n\n`POST /super-admin/companies/{company_id}/wallet/adjust`\n\n| Field | القيمة |\n|-------|--------|\n| `type` | `debit` |\n| `amount` | المبلغ المخصوم (> 0) |\n\n**خطأ `422`:** إذا الرصيد غير كافٍ — `\"message\": \"رصيد المحفظة غير كافٍ\"`"
+          }
+        },
+        {
+          "name": "Get Company (يشمل wallet_balance)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{super_admin_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/super-admin/companies/{{company_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["super-admin", "companies", "{{company_id}}"]
+            },
+            "description": "جلب بيانات الشركة — يتضمن حقل `wallet_balance` في الـ response.\n\nمفيد للتحقق بعد تعديل المحفظة."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Company — Products & Installments",
+      "description": "منتجات الشركة مع سعر الكاش وخطط التقسيط الاختيارية.\n\n**المدد المسموحة:** 3, 6, 9, 12, 15, 18 شهر\n\n**تغيير:** `price` أصبح `cash_price`",
+      "item": [
+        {
+          "name": "Auth",
+          "item": [
+            {
+              "name": "Login",
+              "request": {
+                "method": "POST",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Content-Type", "value": "application/json" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"tax_number\": \"TAX-2024-001\",\n  \"password\": \"Company@1234\"\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "url": {
+                  "raw": "{{base_url}}/company/login",
+                  "host": ["{{base_url}}"],
+                  "path": ["company", "login"]
+                },
+                "description": "تسجيل دخول الشركة بالرقم الضريبي وكلمة المرور.\n\nيحفظ الـ token في `company_token`."
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "var res = pm.response.json();",
+                      "if (res.token) {",
+                      "    pm.collectionVariables.set('company_token', res.token);",
+                      "}"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Me (يشمل wallet_balance)",
+              "request": {
+                "method": "GET",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{company_token}}" }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/company/me",
+                  "host": ["{{base_url}}"],
+                  "path": ["company", "me"]
+                },
+                "description": "بيانات الشركة المسجّلة — تتضمن `wallet_balance`."
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get My Products",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{company_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/company/products?page=1",
+              "host": ["{{base_url}}"],
+              "path": ["company", "products"],
+              "query": [{ "key": "page", "value": "1" }]
+            },
+            "description": "## قائمة منتجات الشركة\n\n`GET /company/products`\n\nكل منتج يتضمن:\n- `cash_price` — سعر الكاش\n- `installment_plans[]` — خطط التقسيط (قد تكون فارغة)"
+          }
+        },
+        {
+          "name": "Add Product — JSON (كاش + تقسيط)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{company_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"منتج الشركة\",\n  \"cash_price\": 5000.00,\n  \"description\": \"وصف المنتج\",\n  \"is_active\": true,\n  \"installment_plans\": [\n    {\n      \"months\": 3,\n      \"down_payment\": 1000.00,\n      \"installment_amount\": 1500.00\n    },\n    {\n      \"months\": 6,\n      \"down_payment\": 800.00,\n      \"installment_amount\": 800.00\n    },\n    {\n      \"months\": 12,\n      \"down_payment\": 500.00,\n      \"installment_amount\": 450.00\n    }\n  ]\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/company/products",
+              "host": ["{{base_url}}"],
+              "path": ["company", "products"]
+            },
+            "description": "## إضافة منتج بكاش وخطط تقسيط\n\n`POST /company/products`\n\n**إلزامي:** `name`, `cash_price`\n**اختياري:** `installment_plans`\n\n**كل خطة:**\n| Field | الوصف |\n|-------|-------|\n| `months` | 3, 6, 9, 12, 15, 18 |\n| `down_payment` | المقدم |\n| `installment_amount` | القسط الشهري |"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var res = pm.response.json();",
+                  "if (res.data && res.data.id) {",
+                  "    pm.collectionVariables.set('product_id', res.data.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Add Product — Cash Only (كاش فقط)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{company_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"منتج كاش فقط\",\n  \"cash_price\": 2500.00,\n  \"description\": \"بدون خطط تقسيط\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/company/products",
+              "host": ["{{base_url}}"],
+              "path": ["company", "products"]
+            },
+            "description": "إضافة منتج **كاش فقط** بدون `installment_plans` — صالح تماماً.\n\n`installment_plans` سترجع `[]` في الـ response."
+          }
+        },
+        {
+          "name": "Add Product — FormData (كاش + تقسيط)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{company_token}}" }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "name", "value": "منتج FormData", "type": "text", "description": "اسم المنتج (مطلوب)" },
+                { "key": "cash_price", "value": "5000", "type": "text", "description": "سعر الكاش (مطلوب)" },
+                { "key": "description", "value": "وصف المنتج", "type": "text", "description": "اختياري" },
+                { "key": "is_active", "value": "1", "type": "text", "description": "1 = مفعّل" },
+                {
+                  "key": "installment_plans",
+                  "value": "[{\"months\":3,\"down_payment\":1000,\"installment_amount\":1500},{\"months\":6,\"down_payment\":800,\"installment_amount\":800}]",
+                  "type": "text",
+                  "description": "JSON string لخطط التقسيط (اختياري)"
+                },
+                { "key": "image", "value": "", "type": "file", "description": "صورة المنتج (اختياري)" }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/company/products",
+              "host": ["{{base_url}}"],
+              "path": ["company", "products"]
+            },
+            "description": "## إضافة منتج عبر FormData\n\nفي `multipart/form-data` أرسل `installment_plans` كـ **JSON string**:\n\n```\n[{\"months\":3,\"down_payment\":1000,\"installment_amount\":1500}]\n```"
+          }
+        },
+        {
+          "name": "Get Product",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{company_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/company/products/{{product_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["company", "products", "{{product_id}}"]
+            },
+            "description": "## تفاصيل منتج\n\n`GET /company/products/{id}`\n\n**Errors:**\n- `403` — المنتج لا يخص الشركة\n- `404` — غير موجود"
+          }
+        },
+        {
+          "name": "Update Product — JSON (تعديل كاش + خطط)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{company_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cash_price\": 5500.00,\n  \"installment_plans\": [\n    {\n      \"months\": 3,\n      \"down_payment\": 1200.00,\n      \"installment_amount\": 1600.00\n    },\n    {\n      \"months\": 9,\n      \"down_payment\": 600.00,\n      \"installment_amount\": 600.00\n    }\n  ]\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/company/products/{{product_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["company", "products", "{{product_id}}"]
+            },
+            "description": "## تعديل منتج\n\n`POST /company/products/{id}`\n\n**سلوك installment_plans:**\n- لم يُرسل → الخطط القديمة تبقى\n- `[]` → حذف كل الخطط\n- مصفوفة جديدة → استبدال كامل"
+          }
+        },
+        {
+          "name": "Update Product — Remove All Installments",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{company_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"installment_plans\": []\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/company/products/{{product_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["company", "products", "{{product_id}}"]
+            },
+            "description": "حذف كل خطط التقسيط من المنتج بإرسال `installment_plans: []`."
+          }
+        },
+        {
+          "name": "Delete Product",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{company_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/company/products/{{product_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["company", "products", "{{product_id}}"]
+            },
+            "description": "## حذف منتج\n\n`DELETE /company/products/{id}`\n\nيحذف خطط التقسيط المرتبطة تلقائياً."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Super Admin — Supplier Products & Installments",
+      "description": "منتجات الموردين مع سعر الكاش وخطط التقسيط — Super Admin فقط.\n\nنفس نظام منتجات الشركة: cash_price إلزامي، installment_plans اختياري.",
+      "item": [
+        {
+          "name": "Get Supplier Products",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{super_admin_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/super-admin/supplier-products?page=1",
+              "host": ["{{base_url}}"],
+              "path": ["super-admin", "supplier-products"],
+              "query": [{ "key": "page", "value": "1" }]
+            },
+            "description": "## قائمة منتجات الموردين\n\n`GET /super-admin/supplier-products`\n\nكل منتج يتضمن `cash_price` و `installment_plans[]`."
+          }
+        },
+        {
+          "name": "Add Supplier Product — JSON",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{super_admin_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"زيت زيتون\",\n  \"cash_price\": 5000.00,\n  \"supplier_id\": 1,\n  \"description\": \"زيت بكر ممتاز\",\n  \"is_active\": true,\n  \"installment_plans\": [\n    {\n      \"months\": 3,\n      \"down_payment\": 1000.00,\n      \"installment_amount\": 1500.00\n    },\n    {\n      \"months\": 12,\n      \"down_payment\": 500.00,\n      \"installment_amount\": 450.00\n    }\n  ]\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/super-admin/supplier-products",
+              "host": ["{{base_url}}"],
+              "path": ["super-admin", "supplier-products"]
+            },
+            "description": "## إضافة منتج مورد\n\n`POST /super-admin/supplier-products`\n\n**إلزامي:** `name`, `cash_price`, `supplier_id`"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var res = pm.response.json();",
+                  "if (res.data && res.data.id) {",
+                  "    pm.collectionVariables.set('supplier_product_id', res.data.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Add Supplier Product — FormData",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{super_admin_token}}" }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "name", "value": "مياه معبأة", "type": "text" },
+                { "key": "cash_price", "value": "5000", "type": "text" },
+                { "key": "supplier_id", "value": "1", "type": "text" },
+                { "key": "installment_plans", "value": "[{\"months\":6,\"down_payment\":800,\"installment_amount\":800}]", "type": "text" },
+                { "key": "image", "value": "", "type": "file" }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/super-admin/supplier-products",
+              "host": ["{{base_url}}"],
+              "path": ["super-admin", "supplier-products"]
+            },
+            "description": "إضافة منتج مورد عبر FormData — `installment_plans` كـ JSON string."
+          }
+        },
+        {
+          "name": "Get Supplier Product",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{super_admin_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/super-admin/supplier-products/{{supplier_product_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["super-admin", "supplier-products", "{{supplier_product_id}}"]
+            },
+            "description": "`GET /super-admin/supplier-products/{id}`"
+          }
+        },
+        {
+          "name": "Update Supplier Product",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{super_admin_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cash_price\": 5500.00,\n  \"installment_plans\": [\n    {\n      \"months\": 9,\n      \"down_payment\": 600.00,\n      \"installment_amount\": 600.00\n    }\n  ]\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/super-admin/supplier-products/{{supplier_product_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["super-admin", "supplier-products", "{{supplier_product_id}}"]
+            },
+            "description": "تعديل منتج مورد — استبدال كامل لـ installment_plans عند الإرسال."
+          }
+        },
+        {
+          "name": "Toggle Supplier Product Status",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{super_admin_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/super-admin/supplier-products/{{supplier_product_id}}/toggle-status",
+              "host": ["{{base_url}}"],
+              "path": ["super-admin", "supplier-products", "{{supplier_product_id}}", "toggle-status"]
+            },
+            "description": "`PATCH /super-admin/supplier-products/{id}/toggle-status`"
+          }
+        },
+        {
+          "name": "Delete Supplier Product",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{super_admin_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/super-admin/supplier-products/{{supplier_product_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["super-admin", "supplier-products", "{{supplier_product_id}}"]
+            },
+            "description": "`DELETE /super-admin/supplier-products/{id}` — يحذف خطط التقسيط تلقائياً."
+          }
+        }
+      ]
+    }
+  ]
+}

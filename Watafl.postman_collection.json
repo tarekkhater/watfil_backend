@@ -245,6 +245,66 @@
                 },
                 "description": "تفعيل أو تعطيل شركة. لو كانت مفعّلة تعطّل والعكس.\n\n**Response:** يرجع `is_active` الجديد ورسالة توضيحية."
               }
+            },
+            {
+              "name": "Get Company Wallet",
+              "request": {
+                "method": "GET",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{super_admin_token}}" }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/super-admin/companies/1/wallet",
+                  "host": ["{{base_url}}"],
+                  "path": ["super-admin", "companies", "1", "wallet"]
+                },
+                "description": "عرض رصيد محفظة شركة.\n\n**Response:** `company_id`, `company_name`, `wallet_balance`"
+              }
+            },
+            {
+              "name": "Set Company Wallet Balance",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Content-Type", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{super_admin_token}}" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"wallet_balance\": 5000.00\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "url": {
+                  "raw": "{{base_url}}/super-admin/companies/1/wallet",
+                  "host": ["{{base_url}}"],
+                  "path": ["super-admin", "companies", "1", "wallet"]
+                },
+                "description": "تعيين رصيد المحفظة مباشرة.\n\n**Body:** `wallet_balance` (مطلوب، ≥ 0)"
+              }
+            },
+            {
+              "name": "Adjust Company Wallet",
+              "request": {
+                "method": "POST",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Content-Type", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{super_admin_token}}" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"amount\": 250.00,\n  \"type\": \"credit\"\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "url": {
+                  "raw": "{{base_url}}/super-admin/companies/1/wallet/adjust",
+                  "host": ["{{base_url}}"],
+                  "path": ["super-admin", "companies", "1", "wallet", "adjust"]
+                },
+                "description": "إضافة أو خصم من المحفظة.\n\n**type:** `credit` = إضافة — `debit` = خصم\n**amount:** > 0"
+              }
             }
           ]
         },
@@ -389,7 +449,8 @@
                   "formdata": [
                     { "key": "name", "value": "مياه أكوا 1.5 لتر", "type": "text", "description": "اسم المنتج (مطلوب)" },
                     { "key": "description", "value": "مياه معدنية طبيعية بحجم 1.5 لتر", "type": "text", "description": "وصف المنتج (اختياري)" },
-                    { "key": "price", "value": "5.50", "type": "text", "description": "السعر بالجنيه (مطلوب، رقم موجب)" },
+                    { "key": "cash_price", "value": "5000", "type": "text", "description": "سعر الكاش (مطلوب)" },
+                    { "key": "installment_plans", "value": "[{\"months\":3,\"down_payment\":1000,\"installment_amount\":1500},{\"months\":6,\"down_payment\":800,\"installment_amount\":800}]", "type": "text", "description": "خطط التقسيط كـ JSON string (اختياري)" },
                     { "key": "supplier_id", "value": "1", "type": "text", "description": "ID المورد (مطلوب)" },
                     { "key": "image", "value": "", "type": "file", "description": "صورة المنتج — jpg/png/webp بحد أقصى 2MB (اختياري)" },
                     { "key": "is_active", "value": "1", "type": "text", "description": "1 = متاح، 0 = غير متاح (اختياري، افتراضي 1)" }
@@ -400,7 +461,7 @@
                   "host": ["{{base_url}}"],
                   "path": ["super-admin", "supplier-products"]
                 },
-                "description": "إضافة منتج جديد لمورد معين.\n\n**بعد الإنشاء:** المنتج يبقى متاحًا لكل الشركات تختاره في متجرها."
+                "description": "إضافة منتج جديد لمورد معين.\n\n**cash_price** إلزامي — **installment_plans** اختياري.\nالمدد: 3, 6, 9, 12, 15, 18 شهر.\n\n**بعد الإنشاء:** المنتج يبقى متاحًا لكل الشركات تختاره في متجرها."
               }
             },
             {
@@ -431,7 +492,8 @@
                   "mode": "formdata",
                   "formdata": [
                     { "key": "name", "value": "مياه أكوا 1.5 لتر - محدث", "type": "text", "description": "اسم المنتج الجديد (اختياري)" },
-                    { "key": "price", "value": "6.00", "type": "text", "description": "السعر الجديد (اختياري)" },
+                    { "key": "cash_price", "value": "5500", "type": "text", "description": "سعر كاش جديد (اختياري)" },
+                    { "key": "installment_plans", "value": "[{\"months\":3,\"down_payment\":1200,\"installment_amount\":1600}]", "type": "text", "description": "استبدال خطط التقسيط — [] لحذف الكل (اختياري)" },
                     { "key": "description", "value": "وصف محدث", "type": "text", "description": "الوصف الجديد (اختياري)" },
                     { "key": "supplier_id", "value": "1", "type": "text", "description": "ID المورد الجديد (اختياري)" },
                     { "key": "image", "value": "", "type": "file", "description": "صورة جديدة (اختياري)" },
@@ -594,7 +656,8 @@
                   "formdata": [
                     { "key": "name", "value": "عصير برتقال طبيعي", "type": "text", "description": "اسم المنتج (مطلوب)" },
                     { "key": "description", "value": "عصير برتقال طازج 100% طبيعي", "type": "text", "description": "وصف المنتج (اختياري)" },
-                    { "key": "price", "value": "15.00", "type": "text", "description": "السعر بالجنيه (مطلوب)" },
+                    { "key": "cash_price", "value": "5000", "type": "text", "description": "سعر الكاش (مطلوب)" },
+                    { "key": "installment_plans", "value": "[{\"months\":3,\"down_payment\":1000,\"installment_amount\":1500},{\"months\":6,\"down_payment\":800,\"installment_amount\":800}]", "type": "text", "description": "خطط التقسيط كـ JSON string (اختياري) — المدد: 3,6,9,12,15,18" },
                     { "key": "image", "value": "", "type": "file", "description": "صورة المنتج (اختياري)" },
                     { "key": "is_active", "value": "1", "type": "text", "description": "1 = متاح، 0 = مخفي (اختياري)" }
                   ]
@@ -604,7 +667,7 @@
                   "host": ["{{base_url}}"],
                   "path": ["company", "products"]
                 },
-                "description": "إضافة منتج خاص بالشركة."
+                "description": "إضافة منتج خاص بالشركة.\n\n**cash_price** إلزامي — **installment_plans** اختياري.\nكل خطة: months + down_payment + installment_amount (قسط شهري)."
               }
             },
             {
@@ -635,7 +698,8 @@
                   "mode": "formdata",
                   "formdata": [
                     { "key": "name", "value": "عصير برتقال محدث", "type": "text", "description": "اسم جديد (اختياري)" },
-                    { "key": "price", "value": "18.00", "type": "text", "description": "سعر جديد (اختياري)" },
+                    { "key": "cash_price", "value": "5500", "type": "text", "description": "سعر كاش جديد (اختياري)" },
+                    { "key": "installment_plans", "value": "[{\"months\":3,\"down_payment\":1200,\"installment_amount\":1600}]", "type": "text", "description": "استبدال خطط التقسيط — [] لحذف الكل (اختياري)" },
                     { "key": "description", "value": "وصف محدث", "type": "text", "description": "وصف جديد (اختياري)" },
                     { "key": "image", "value": "", "type": "file", "description": "صورة جديدة (اختياري)" },
                     { "key": "is_active", "value": "1", "type": "text", "description": "1 أو 0 (اختياري)" }

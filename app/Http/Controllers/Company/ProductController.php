@@ -9,13 +9,14 @@ use App\Http\Resources\CompanyProductResource;
 use App\Models\CompanyProduct;
 use App\Support\PublicFile;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
 
 class ProductController extends Controller
 {
     public function index(): JsonResponse
     {
         $company  = auth()->user();
-        $products = $company->products()->latest()->paginate(15);
+        $products = $company->products()->with('installmentPlans')->latest()->paginate(15);
 
         return response()->json([
             'data' => CompanyProductResource::collection($products->items()),
@@ -30,18 +31,28 @@ class ProductController extends Controller
 
     public function store(StoreCompanyProductRequest $request): JsonResponse
     {
-        $data             = $request->validated();
+        $data               = $request->validated();
+        $installmentPlans   = $data['installment_plans'] ?? [];
         $data['company_id'] = auth()->id();
+        unset($data['installment_plans']);
 
         if ($request->hasFile('image')) {
             $data['image'] = $request->file('image')->store('products/company', 'public');
         }
 
-        $product = CompanyProduct::create($data);
+        $product = DB::transaction(function () use ($data, $installmentPlans) {
+            $product = CompanyProduct::create($data);
+
+            if (! empty($installmentPlans)) {
+                $product->installmentPlans()->createMany($installmentPlans);
+            }
+
+            return $product;
+        });
 
         return response()->json([
             'message' => 'تم إضافة المنتج بنجاح',
-            'data'    => new CompanyProductResource($product),
+            'data'    => new CompanyProductResource($product->load('installmentPlans')),
         ], 201);
     }
 
@@ -50,7 +61,7 @@ class ProductController extends Controller
         $this->authorizeProduct($companyProduct);
 
         return response()->json([
-            'data' => new CompanyProductResource($companyProduct),
+            'data' => new CompanyProductResource($companyProduct->load('installmentPlans')),
         ]);
     }
 
@@ -58,7 +69,10 @@ class ProductController extends Controller
     {
         $this->authorizeProduct($companyProduct);
 
-        $data = $request->validated();
+        $data             = $request->validated();
+        $hasInstallmentPlans = array_key_exists('installment_plans', $data);
+        $installmentPlans = $data['installment_plans'] ?? [];
+        unset($data['installment_plans']);
 
         if ($request->hasFile('image')) {
             if ($companyProduct->image) {
@@ -67,11 +81,21 @@ class ProductController extends Controller
             $data['image'] = $request->file('image')->store('products/company', 'public');
         }
 
-        $companyProduct->update($data);
+        DB::transaction(function () use ($companyProduct, $data, $hasInstallmentPlans, $installmentPlans) {
+            $companyProduct->update($data);
+
+            if ($hasInstallmentPlans) {
+                $companyProduct->installmentPlans()->delete();
+
+                if (! empty($installmentPlans)) {
+                    $companyProduct->installmentPlans()->createMany($installmentPlans);
+                }
+            }
+        });
 
         return response()->json([
             'message' => 'تم تحديث المنتج بنجاح',
-            'data'    => new CompanyProductResource($companyProduct->fresh()),
+            'data'    => new CompanyProductResource($companyProduct->fresh()->load('installmentPlans')),
         ]);
     }
 

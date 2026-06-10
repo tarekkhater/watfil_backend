@@ -34,6 +34,9 @@ Route::prefix('super-admin')->group(function () {
         Route::post('companies/{company}', [CompanyController::class, 'update']);
         Route::delete('companies/{company}', [CompanyController::class, 'destroy']);
         Route::patch('companies/{company}/toggle-status', [CompanyController::class, 'toggleStatus']);
+        Route::get('companies/{company}/wallet', [CompanyController::class, 'showWallet']);
+        Route::patch('companies/{company}/wallet', [CompanyController::class, 'updateWallet']);
+        Route::post('companies/{company}/wallet/adjust', [CompanyController::class, 'adjustWallet']);
 
         // Suppliers CRUD
         Route::get('suppliers', [SupplierController::class, 'index']);

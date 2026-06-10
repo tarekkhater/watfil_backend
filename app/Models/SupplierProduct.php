@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class SupplierProduct extends Model
 {
@@ -12,13 +13,13 @@ class SupplierProduct extends Model
         'name',
         'description',
         'image',
-        'price',
+        'cash_price',
         'supplier_id',
         'is_active',
     ];
 
     protected $casts = [
-        'price'     => 'decimal:2',
+        'cash_price' => 'decimal:2',
         'is_active' => 'boolean',
     ];
 
@@ -30,5 +31,10 @@ class SupplierProduct extends Model
     public function companies(): BelongsToMany
     {
         return $this->belongsToMany(Company::class, 'company_catalog');
+    }
+
+    public function installmentPlans(): HasMany
+    {
+        return $this->hasMany(SupplierProductInstallmentPlan::class)->orderBy('months');
     }
 }

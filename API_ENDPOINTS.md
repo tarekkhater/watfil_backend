@@ -148,14 +148,25 @@ interface SupplierProduct {
   name: string;
   description: string | null;
   image: string | null;        // URL كامل
-  price: string;               // "150.00" — string مش number
+  cash_price: string;          // سعر الكاش — "150.00"
   is_active: boolean;
+  installment_plans: CompanyProductInstallmentPlan[];
   supplier: Supplier;          // موجود لما يكون loaded
   created_at: string;
 }
 ```
 
 ---
+
+### CompanyProductInstallmentPlan
+
+```ts
+interface CompanyProductInstallmentPlan {
+  months: number;              // 3 | 6 | 9 | 12 | 15 | 18
+  down_payment: string;        // المقدم — "1000.00"
+  installment_amount: string;  // قيمة القسط الشهري — "500.00"
+}
+```
 
 ### CompanyProduct
 
@@ -165,8 +176,9 @@ interface CompanyProduct {
   name: string;
   description: string | null;
   image: string | null;
-  price: string;
+  cash_price: string;          // سعر الكاش — "99.99"
   is_active: boolean;
+  installment_plans: CompanyProductInstallmentPlan[];
   created_at: string;
 }
 ```
@@ -664,9 +676,16 @@ GET /super-admin/supplier-products?page=1&supplier_id=1&is_active=1
       "id": 1,
       "name": "زيت زيتون",
       "description": "زيت بكر ممتاز",
-      "image": "http://localhost:8000/storage/products/supplier/xxx.jpg",
-      "price": "150.00",
+      "image": "http://localhost:8000/products/supplier/xxx.jpg",
+      "cash_price": "5000.00",
       "is_active": true,
+      "installment_plans": [
+        {
+          "months": 3,
+          "down_payment": "1000.00",
+          "installment_amount": "1500.00"
+        }
+      ],
       "supplier": {
         "id": 1,
         "name": "مورد الأغذية",
@@ -681,7 +700,7 @@ GET /super-admin/supplier-products?page=1&supplier_id=1&is_active=1
 }
 ```
 
-**للفرونت:** `price` نوعه string — استخدم `parseFloat(price)` للعرض أو الحسابات.
+**للفرونت:** `cash_price` وحقول التقسيط نوعها string — استخدم `parseFloat()` للعرض أو الحسابات.
 
 ---
 
@@ -695,16 +714,37 @@ POST /super-admin/supplier-products
 |---|---|
 | **Content-Type** | `multipart/form-data` |
 
-**Body (FormData):**
+**Body (FormData أو JSON):**
 
 | Field | Type | Required | القيود |
 |-------|------|----------|--------|
 | `name` | string | ✅ | max 255 |
-| `price` | number | ✅ | ≥ 0 |
+| `cash_price` | number | ✅ | ≥ 0 — سعر الكاش |
 | `supplier_id` | number | ✅ | ID مورد موجود |
 | `description` | string | ❌ | — |
 | `image` | File | ❌ | jpg/jpeg/png/webp — max 2MB |
 | `is_active` | boolean | ❌ | افتراضي `true` |
+| `installment_plans` | array أو JSON string | ❌ | خطط التقسيط (اختياري) |
+
+**`installment_plans` — كل عنصر:**
+
+| Field | Type | Required | القيود |
+|-------|------|----------|--------|
+| `months` | number | ✅ | `3, 6, 9, 12, 15, 18` — بدون تكرار |
+| `down_payment` | number | ✅ | ≥ 0 — المقدم |
+| `installment_amount` | number | ✅ | > 0 — قيمة القسط **الشهري** |
+
+**مثال FormData:**
+
+```js
+formData.append('name', 'زيت زيتون');
+formData.append('cash_price', '5000');
+formData.append('supplier_id', '1');
+formData.append('installment_plans', JSON.stringify([
+  { months: 3, down_payment: 1000, installment_amount: 1500 },
+  { months: 6, down_payment: 800, installment_amount: 800 },
+]));
+```
 
 **Response `201`:**
 
@@ -741,8 +781,10 @@ POST /super-admin/supplier-products/{id}
 
 | | |
 |---|---|
-| **Content-Type** | `multipart/form-data` |
+| **Content-Type** | `multipart/form-data` أو `application/json` |
 | **Body** | كل الحقول اختيارية |
+
+> إذا أُرسل `installment_plans` يتم **استبدال كل الخطط** بالقيم الجديدة. لإزالة كل الخطط أرسل `installment_plans: []`. إذا لم يُرسل الحقل تبقى الخطط القديمة كما هي.
 
 **Response `200`:**
 
@@ -925,9 +967,21 @@ GET /company/products?page=1
       "id": 1,
       "name": "منتج الشركة",
       "description": "وصف",
-      "image": "http://localhost:8000/storage/products/company/xxx.jpg",
-      "price": "99.99",
+      "image": "http://localhost:8000/products/company/xxx.jpg",
+      "cash_price": "5000.00",
       "is_active": true,
+      "installment_plans": [
+        {
+          "months": 3,
+          "down_payment": "1000.00",
+          "installment_amount": "1500.00"
+        },
+        {
+          "months": 6,
+          "down_payment": "800.00",
+          "installment_amount": "800.00"
+        }
+      ],
       "created_at": "2026-05-21 10:00:00"
     }
   ],
@@ -949,15 +1003,35 @@ POST /company/products
 |---|---|
 | **Content-Type** | `multipart/form-data` |
 
-**Body (FormData):**
+**Body (FormData أو JSON):**
 
 | Field | Type | Required | القيود |
 |-------|------|----------|--------|
 | `name` | string | ✅ | max 255 |
-| `price` | number | ✅ | ≥ 0 |
+| `cash_price` | number | ✅ | ≥ 0 — سعر الكاش |
 | `description` | string | ❌ | — |
 | `image` | File | ❌ | jpg/jpeg/png/webp — max 2MB |
 | `is_active` | boolean | ❌ | افتراضي `true` |
+| `installment_plans` | array أو JSON string | ❌ | خطط التقسيط (اختياري) |
+
+**`installment_plans` — كل عنصر:**
+
+| Field | Type | Required | القيود |
+|-------|------|----------|--------|
+| `months` | number | ✅ | `3` أو `6` أو `9` أو `12` أو `15` أو `18` — بدون تكرار |
+| `down_payment` | number | ✅ | ≥ 0 — المقدم |
+| `installment_amount` | number | ✅ | > 0 — قيمة القسط **الشهري** |
+
+**مثال FormData:**
+
+```js
+formData.append('name', 'منتج الشركة');
+formData.append('cash_price', '5000');
+formData.append('installment_plans', JSON.stringify([
+  { months: 3, down_payment: 1000, installment_amount: 1500 },
+  { months: 6, down_payment: 800, installment_amount: 800 },
+]));
+```
 
 **Response `201`:**
 
@@ -1001,8 +1075,10 @@ POST /company/products/{id}
 
 | | |
 |---|---|
-| **Content-Type** | `multipart/form-data` |
+| **Content-Type** | `multipart/form-data` أو `application/json` |
 | **Body** | كل الحقول اختيارية |
+
+> إذا أُرسل `installment_plans` يتم **استبدال كل الخطط** بالقيم الجديدة. لإزالة كل الخطط أرسل `installment_plans: []`. إذا لم يُرسل الحقل تبقى الخطط القديمة كما هي.
 
 **Response `200`:**
 
@@ -1289,11 +1365,13 @@ try {
 
 ### 4. السعر string
 
-`price` بيرجع كـ `"150.00"` مش `150`. للعرض:
+`cash_price` و `down_payment` و `installment_amount` بترجع كـ `"150.00"` مش `150`. للعرض:
 
 ```js
-const formatted = parseFloat(product.price).toFixed(2) + ' ج.م';
+const formatted = parseFloat(product.cash_price).toFixed(2) + ' ج.م';
 ```
+
+> منتجات الشركة ومنتجات الموردين: `cash_price` إلزامي، `installment_plans` اختياري.
 
 ### 5. Pagination
 

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class CompanyProduct extends Model
 {
@@ -11,18 +12,23 @@ class CompanyProduct extends Model
         'name',
         'description',
         'image',
-        'price',
+        'cash_price',
         'company_id',
         'is_active',
     ];
 
     protected $casts = [
-        'price'     => 'decimal:2',
+        'cash_price' => 'decimal:2',
         'is_active' => 'boolean',
     ];
 
     public function company(): BelongsTo
     {
         return $this->belongsTo(Company::class);
+    }
+
+    public function installmentPlans(): HasMany
+    {
+        return $this->hasMany(CompanyProductInstallmentPlan::class)->orderBy('months');
     }
 }

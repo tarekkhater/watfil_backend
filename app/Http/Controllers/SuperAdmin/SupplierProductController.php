@@ -10,12 +10,13 @@ use App\Models\SupplierProduct;
 use App\Support\PublicFile;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class SupplierProductController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
-        $query = SupplierProduct::with('supplier');
+        $query = SupplierProduct::with(['supplier', 'installmentPlans']);
 
         if ($request->has('supplier_id')) {
             $query->where('supplier_id', $request->supplier_id);
@@ -40,30 +41,43 @@ class SupplierProductController extends Controller
 
     public function store(StoreSupplierProductRequest $request): JsonResponse
     {
-        $data = $request->validated();
+        $data             = $request->validated();
+        $installmentPlans = $data['installment_plans'] ?? [];
+        unset($data['installment_plans']);
 
         if ($request->hasFile('image')) {
             $data['image'] = $request->file('image')->store('products/supplier', 'public');
         }
 
-        $product = SupplierProduct::create($data);
+        $product = DB::transaction(function () use ($data, $installmentPlans) {
+            $product = SupplierProduct::create($data);
+
+            if (! empty($installmentPlans)) {
+                $product->installmentPlans()->createMany($installmentPlans);
+            }
+
+            return $product;
+        });
 
         return response()->json([
             'message' => 'تم إنشاء المنتج بنجاح',
-            'data'    => new SupplierProductResource($product->load('supplier')),
+            'data'    => new SupplierProductResource($product->load(['supplier', 'installmentPlans'])),
         ], 201);
     }
 
     public function show(SupplierProduct $supplierProduct): JsonResponse
     {
         return response()->json([
-            'data' => new SupplierProductResource($supplierProduct->load('supplier')),
+            'data' => new SupplierProductResource($supplierProduct->load(['supplier', 'installmentPlans'])),
         ]);
     }
 
     public function update(UpdateSupplierProductRequest $request, SupplierProduct $supplierProduct): JsonResponse
     {
-        $data = $request->validated();
+        $data                = $request->validated();
+        $hasInstallmentPlans = array_key_exists('installment_plans', $data);
+        $installmentPlans    = $data['installment_plans'] ?? [];
+        unset($data['installment_plans']);
 
         if ($request->hasFile('image')) {
             if ($supplierProduct->image) {
@@ -72,11 +86,21 @@ class SupplierProductController extends Controller
             $data['image'] = $request->file('image')->store('products/supplier', 'public');
         }
 
-        $supplierProduct->update($data);
+        DB::transaction(function () use ($supplierProduct, $data, $hasInstallmentPlans, $installmentPlans) {
+            $supplierProduct->update($data);
+
+            if ($hasInstallmentPlans) {
+                $supplierProduct->installmentPlans()->delete();
+
+                if (! empty($installmentPlans)) {
+                    $supplierProduct->installmentPlans()->createMany($installmentPlans);
+                }
+            }
+        });
 
         return response()->json([
             'message' => 'تم تحديث المنتج بنجاح',
-            'data'    => new SupplierProductResource($supplierProduct->fresh()->load('supplier')),
+            'data'    => new SupplierProductResource($supplierProduct->fresh()->load(['supplier', 'installmentPlans'])),
         ]);
     }
 
