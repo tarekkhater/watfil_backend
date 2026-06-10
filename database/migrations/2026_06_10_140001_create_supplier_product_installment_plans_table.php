@@ -8,6 +8,8 @@ return new class extends Migration
 {
     public function up(): void
     {
+        Schema::dropIfExists('supplier_product_installment_plans');
+
         Schema::create('supplier_product_installment_plans', function (Blueprint $table) {
             $table->id();
             $table->foreignId('supplier_product_id')->constrained('supplier_products')->cascadeOnDelete();
