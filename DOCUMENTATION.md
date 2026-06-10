@@ -1,5 +1,7 @@
 # Watafl API — توثيق المشروع
 
+> **للمطورين الفرونت:** راجع [API_ENDPOINTS.md](API_ENDPOINTS.md) — توثيق منفصل مخصص للـ endpoints مع أمثلة Axios و TypeScript types.
+
 ## جدول المحتويات
 1. [نظرة عامة](#نظرة-عامة)
 2. [متطلبات التشغيل](#متطلبات-التشغيل)
@@ -7,10 +9,11 @@
 4. [هيكل المشروع](#هيكل-المشروع)
 5. [قاعدة البيانات](#قاعدة-البيانات)
 6. [المصادقة](#المصادقة)
-7. [Super Admin API](#super-admin-api)
-8. [Company API](#company-api)
-9. [رسائل الخطأ](#رسائل-الخطأ)
-10. [ملاحظات تقنية](#ملاحظات-تقنية)
+7. [فهرس كل الـ Endpoints](#فهرس-كل-ال-endpoints)
+8. [Super Admin API](#super-admin-api)
+9. [Company API](#company-api)
+10. [رسائل الخطأ](#رسائل-الخطأ)
+11. [ملاحظات تقنية](#ملاحظات-تقنية)
 
 ---
 
@@ -241,6 +244,61 @@ Company         >──< SupplierProduct    (many-to-many عبر company_catalog
 | `super_admin` | يتحقق أن المستخدم هو `SuperAdmin` model |
 | `company` | يتحقق أن المستخدم هو `Company` model وأنه مفعّل |
 
+### Headers المطلوبة
+
+| Header | القيمة | متى |
+|---|---|---|
+| `Accept` | `application/json` | كل الـ requests |
+| `Content-Type` | `application/json` | طلبات JSON (login، catalog/add، catalog/remove) |
+| `Content-Type` | `multipart/form-data` | طلبات رفع صور (شركات، موردين، منتجات) |
+| `Authorization` | `Bearer {token}` | كل الـ endpoints المحمية (🔒) |
+
+> **Base URL للـ API:** `http://localhost:8000/api`
+
+---
+
+## فهرس كل الـ Endpoints
+
+| # | Method | المسار الكامل | المصادقة | الوصف |
+|---|---|---|---|---|
+| 1 | `POST` | `/api/super-admin/login` | — | تسجيل دخول السوبر أدمن |
+| 2 | `POST` | `/api/super-admin/logout` | 🔒 Super Admin | تسجيل خروج وحذف الـ Token |
+| 3 | `GET` | `/api/super-admin/me` | 🔒 Super Admin | بيانات السوبر أدمن الحالي |
+| 4 | `GET` | `/api/super-admin/governorates` | 🔒 Super Admin | قائمة المحافظات المصرية (27) |
+| 5 | `GET` | `/api/super-admin/companies` | 🔒 Super Admin | قائمة الشركات (paginated) |
+| 6 | `POST` | `/api/super-admin/companies` | 🔒 Super Admin | إنشاء شركة جديدة |
+| 7 | `GET` | `/api/super-admin/companies/{id}` | 🔒 Super Admin | تفاصيل شركة واحدة |
+| 8 | `POST` | `/api/super-admin/companies/{id}` | 🔒 Super Admin | تعديل بيانات شركة |
+| 9 | `DELETE` | `/api/super-admin/companies/{id}` | 🔒 Super Admin | حذف شركة |
+| 10 | `PATCH` | `/api/super-admin/companies/{id}/toggle-status` | 🔒 Super Admin | تفعيل/تعطيل شركة |
+| 11 | `GET` | `/api/super-admin/suppliers` | 🔒 Super Admin | قائمة الموردين (paginated) |
+| 12 | `POST` | `/api/super-admin/suppliers` | 🔒 Super Admin | إنشاء مورد جديد |
+| 13 | `GET` | `/api/super-admin/suppliers/{id}` | 🔒 Super Admin | تفاصيل مورد واحد |
+| 14 | `POST` | `/api/super-admin/suppliers/{id}` | 🔒 Super Admin | تعديل بيانات مورد |
+| 15 | `DELETE` | `/api/super-admin/suppliers/{id}` | 🔒 Super Admin | حذف مورد (يحذف منتجاته) |
+| 16 | `GET` | `/api/super-admin/supplier-products` | 🔒 Super Admin | قائمة منتجات الموردين |
+| 17 | `POST` | `/api/super-admin/supplier-products` | 🔒 Super Admin | إضافة منتج لمورد |
+| 18 | `GET` | `/api/super-admin/supplier-products/{id}` | 🔒 Super Admin | تفاصيل منتج مورد |
+| 19 | `POST` | `/api/super-admin/supplier-products/{id}` | 🔒 Super Admin | تعديل منتج مورد |
+| 20 | `DELETE` | `/api/super-admin/supplier-products/{id}` | 🔒 Super Admin | حذف منتج مورد |
+| 21 | `PATCH` | `/api/super-admin/supplier-products/{id}/toggle-status` | 🔒 Super Admin | تفعيل/إيقاف منتج مورد |
+| 22 | `POST` | `/api/company/login` | — | تسجيل دخول الشركة |
+| 23 | `POST` | `/api/company/logout` | 🔒 Company | تسجيل خروج الشركة |
+| 24 | `GET` | `/api/company/me` | 🔒 Company | بيانات الشركة الحالية |
+| 25 | `GET` | `/api/company/products` | 🔒 Company | قائمة منتجات الشركة الخاصة |
+| 26 | `POST` | `/api/company/products` | 🔒 Company | إضافة منتج خاص بالشركة |
+| 27 | `GET` | `/api/company/products/{id}` | 🔒 Company | تفاصيل منتج خاص |
+| 28 | `POST` | `/api/company/products/{id}` | 🔒 Company | تعديل منتج خاص |
+| 29 | `DELETE` | `/api/company/products/{id}` | 🔒 Company | حذف منتج خاص |
+| 30 | `GET` | `/api/company/catalog/available` | 🔒 Company | منتجات الموردين المتاحة للاختيار |
+| 31 | `GET` | `/api/company/catalog/mine` | 🔒 Company | منتجات الموردين في كتالوج الشركة |
+| 32 | `POST` | `/api/company/catalog/add` | 🔒 Company | إضافة منتجات متعددة للكتالوج |
+| 33 | `POST` | `/api/company/catalog/remove` | 🔒 Company | إزالة منتجات متعددة من الكتالوج |
+| 34 | `POST` | `/api/company/catalog/{id}` | 🔒 Company | إضافة منتج واحد للكتالوج |
+| 35 | `DELETE` | `/api/company/catalog/{id}` | 🔒 Company | إزالة منتج واحد من الكتالوج |
+
+**المجموع: 35 endpoint API**
+
 ---
 
 ## Super Admin API
@@ -287,6 +345,17 @@ Company         >──< SupplierProduct    (many-to-many عبر company_catalog
 
 #### `GET /me` 🔒
 جلب بيانات السوبر أدمن الحالي.
+
+**Response (200):**
+```json
+{
+  "id": 1,
+  "name": "Super Admin",
+  "email": "admin@watafl.com",
+  "created_at": "2026-05-21T10:00:00.000000Z",
+  "updated_at": "2026-05-21T10:00:00.000000Z"
+}
+```
 
 ---
 
@@ -368,11 +437,47 @@ Company         >──< SupplierProduct    (many-to-many عبر company_catalog
 #### `GET /companies/{id}` 🔒
 جلب تفاصيل شركة واحدة.
 
+**URL Param:** `{id}` — معرّف الشركة
+
+**Response (200):**
+```json
+{
+  "data": {
+    "id": 1,
+    "name": "شركة الأمل",
+    "tax_number": "TAX-001",
+    "is_active": true,
+    "logo": "http://localhost:8000/storage/logos/companies/xxx.jpg",
+    "governorate": { "id": 1, "name_ar": "القاهرة", "name_en": "Cairo" },
+    "created_at": "2026-05-21 10:00:00"
+  }
+}
+```
+
+---
+
 #### `POST /companies/{id}` 🔒
 تعديل بيانات شركة (كل الحقول اختيارية، يُرسل المطلوب تغييره فقط).
 
+**Request Body (form-data):** نفس حقول الإنشاء لكن كلها اختيارية (`sometimes`).
+
+**Response (200):**
+```json
+{
+  "message": "تم تحديث الشركة بنجاح",
+  "data": { ... }
+}
+```
+
+---
+
 #### `DELETE /companies/{id}` 🔒
 حذف شركة نهائيًا (الصورة تُحذف من الـ storage تلقائيًا).
+
+**Response (200):**
+```json
+{ "message": "تم حذف الشركة بنجاح" }
+```
 
 ---
 
@@ -394,6 +499,27 @@ Company         >──< SupplierProduct    (many-to-many عبر company_catalog
 #### `GET /suppliers` 🔒
 جلب كل الموردين مع عدد منتجاتهم (`products_count`).
 
+**Query Params:** `page` (اختياري)
+
+**Response (200):**
+```json
+{
+  "data": [
+    {
+      "id": 1,
+      "name": "مورد الأغذية",
+      "description": "مورد متخصص في المنتجات الغذائية",
+      "logo": "http://localhost:8000/storage/logos/suppliers/xxx.jpg",
+      "products_count": 12,
+      "created_at": "2026-05-21 10:00:00"
+    }
+  ],
+  "meta": { "total": 5, "current_page": 1, "last_page": 1, "per_page": 15 }
+}
+```
+
+---
+
 #### `POST /suppliers` 🔒
 إنشاء مورد جديد.
 
@@ -404,14 +530,61 @@ Company         >──< SupplierProduct    (many-to-many عبر company_catalog
 | `description` | string | ❌ | وصف المورد |
 | `logo` | file | ❌ | صورة jpg/png/webp بحد أقصى 2MB |
 
+**Response (201):**
+```json
+{
+  "message": "تم إنشاء المورد بنجاح",
+  "data": {
+    "id": 1,
+    "name": "مورد الأغذية",
+    "description": null,
+    "logo": null,
+    "created_at": "2026-05-21 10:00:00"
+  }
+}
+```
+
+---
+
 #### `GET /suppliers/{id}` 🔒
 جلب تفاصيل مورد مع عدد منتجاته.
+
+**Response (200):**
+```json
+{
+  "data": {
+    "id": 1,
+    "name": "مورد الأغذية",
+    "description": "وصف المورد",
+    "logo": "http://localhost:8000/storage/logos/suppliers/xxx.jpg",
+    "products_count": 12,
+    "created_at": "2026-05-21 10:00:00"
+  }
+}
+```
+
+---
 
 #### `POST /suppliers/{id}` 🔒
 تعديل بيانات مورد (كل الحقول اختيارية).
 
+**Response (200):**
+```json
+{
+  "message": "تم تحديث المورد بنجاح",
+  "data": { ... }
+}
+```
+
+---
+
 #### `DELETE /suppliers/{id}` 🔒
 حذف مورد. **تنبيه:** حذف المورد يحذف كل منتجاته تلقائيًا (cascade).
+
+**Response (200):**
+```json
+{ "message": "تم حذف المورد بنجاح" }
+```
 
 ---
 
@@ -442,17 +615,85 @@ Company         >──< SupplierProduct    (many-to-many عبر company_catalog
 
 **ملاحظة:** بعد الإنشاء يصبح المنتج متاحًا لكل الشركات تختاره في متجرها.
 
+**Response (201):**
+```json
+{
+  "message": "تم إنشاء المنتج بنجاح",
+  "data": {
+    "id": 1,
+    "name": "زيت زيتون",
+    "description": "زيت زيتون بكر ممتاز",
+    "image": "http://localhost:8000/storage/products/supplier/xxx.jpg",
+    "price": "150.00",
+    "is_active": true,
+    "supplier": {
+      "id": 1,
+      "name": "مورد الأغذية",
+      "description": null,
+      "logo": null,
+      "created_at": "2026-05-21 10:00:00"
+    },
+    "created_at": "2026-05-21 10:00:00"
+  }
+}
+```
+
+---
+
 #### `GET /supplier-products/{id}` 🔒
 جلب تفاصيل منتج مع بيانات المورد.
+
+**Response (200):**
+```json
+{
+  "data": {
+    "id": 1,
+    "name": "زيت زيتون",
+    "description": "زيت زيتون بكر ممتاز",
+    "image": "http://localhost:8000/storage/products/supplier/xxx.jpg",
+    "price": "150.00",
+    "is_active": true,
+    "supplier": { "id": 1, "name": "مورد الأغذية", ... },
+    "created_at": "2026-05-21 10:00:00"
+  }
+}
+```
+
+---
 
 #### `POST /supplier-products/{id}` 🔒
 تعديل منتج (كل الحقول اختيارية).
 
+**Response (200):**
+```json
+{
+  "message": "تم تحديث المنتج بنجاح",
+  "data": { ... }
+}
+```
+
+---
+
 #### `DELETE /supplier-products/{id}` 🔒
 حذف منتج (الصورة تُحذف تلقائيًا).
 
+**Response (200):**
+```json
+{ "message": "تم حذف المنتج بنجاح" }
+```
+
+---
+
 #### `PATCH /supplier-products/{id}/toggle-status` 🔒
 تفعيل أو إيقاف منتج. المنتجات الموقوفة لا تظهر للشركات.
+
+**Response (200):**
+```json
+{
+  "message": "تم تعطيل المنتج",
+  "is_active": false
+}
+```
 
 ---
 
@@ -499,8 +740,30 @@ Company         >──< SupplierProduct    (many-to-many عبر company_catalog
 #### `POST /logout` 🔒
 تسجيل الخروج.
 
+**Response (200):**
+```json
+{ "message": "تم تسجيل الخروج بنجاح" }
+```
+
+---
+
 #### `GET /me` 🔒
 جلب بيانات الشركة الحالية مع المحافظة.
+
+**Response (200):**
+```json
+{
+  "data": {
+    "id": 1,
+    "name": "شركة الأمل",
+    "tax_number": "TAX-2024-001",
+    "is_active": true,
+    "logo": null,
+    "governorate": { "id": 1, "name_ar": "القاهرة", "name_en": "Cairo" },
+    "created_at": "2026-05-21 10:00:00"
+  }
+}
+```
 
 ---
 
@@ -508,6 +771,28 @@ Company         >──< SupplierProduct    (many-to-many عبر company_catalog
 
 #### `GET /products` 🔒
 جلب منتجات الشركة الخاصة (منتجاتها هي فقط).
+
+**Query Params:** `page` (اختياري)
+
+**Response (200):**
+```json
+{
+  "data": [
+    {
+      "id": 1,
+      "name": "منتج الشركة",
+      "description": "وصف المنتج",
+      "image": "http://localhost:8000/storage/products/company/xxx.jpg",
+      "price": "99.99",
+      "is_active": true,
+      "created_at": "2026-05-21 10:00:00"
+    }
+  ],
+  "meta": { "total": 10, "current_page": 1, "last_page": 1, "per_page": 15 }
+}
+```
+
+---
 
 #### `POST /products` 🔒
 إضافة منتج خاص بالشركة.
@@ -521,14 +806,64 @@ Company         >──< SupplierProduct    (many-to-many عبر company_catalog
 | `image` | file | ❌ | صورة jpg/png/webp بحد أقصى 2MB |
 | `is_active` | boolean | ❌ | افتراضي `1` |
 
+**Response (201):**
+```json
+{
+  "message": "تم إضافة المنتج بنجاح",
+  "data": {
+    "id": 1,
+    "name": "منتج الشركة",
+    "description": null,
+    "image": null,
+    "price": "99.99",
+    "is_active": true,
+    "created_at": "2026-05-21 10:00:00"
+  }
+}
+```
+
+---
+
 #### `GET /products/{id}` 🔒
-جلب منتج خاص. **أمان:** الشركة تقدر تشوف منتجاتها بس.
+جلب منتج خاص. **أمان:** الشركة تقدر تشوف منتجاتها بس — محاولة الوصول لمنتج شركة أخرى ترجع `403`.
+
+**Response (200):**
+```json
+{
+  "data": {
+    "id": 1,
+    "name": "منتج الشركة",
+    "description": "وصف",
+    "image": null,
+    "price": "99.99",
+    "is_active": true,
+    "created_at": "2026-05-21 10:00:00"
+  }
+}
+```
+
+---
 
 #### `POST /products/{id}` 🔒
 تعديل منتج خاص (كل الحقول اختيارية).
 
+**Response (200):**
+```json
+{
+  "message": "تم تحديث المنتج بنجاح",
+  "data": { ... }
+}
+```
+
+---
+
 #### `DELETE /products/{id}` 🔒
 حذف منتج خاص.
+
+**Response (200):**
+```json
+{ "message": "تم حذف المنتج بنجاح" }
+```
 
 ---
 
@@ -548,6 +883,10 @@ Company         >──< SupplierProduct    (many-to-many عبر company_catalog
 #### `GET /catalog/mine` 🔒
 جلب المنتجات اللي الشركة اختارتها من كتالوج الموردين.
 
+**Query Params:** `page` (اختياري)
+
+**Response (200):** نفس شكل `supplier-products` مع بيانات المورد.
+
 ---
 
 #### `POST /catalog/add` 🔒
@@ -560,7 +899,12 @@ Company         >──< SupplierProduct    (many-to-many عبر company_catalog
 }
 ```
 
-**ملاحظة:** لو المنتج موجود بالفعل في الكتالوج لا يتكرر.
+**ملاحظة:** لو المنتج موجود بالفعل في الكتالوج لا يتكرر. المنتجات غير المفعّلة (`is_active = false`) يتم تجاهلها تلقائيًا.
+
+**Response (200):**
+```json
+{ "message": "تم إضافة المنتجات إلى متجرك بنجاح" }
+```
 
 ---
 
@@ -574,13 +918,48 @@ Company         >──< SupplierProduct    (many-to-many عبر company_catalog
 }
 ```
 
+**Response (200):**
+```json
+{ "message": "تم إزالة المنتجات من متجرك بنجاح" }
+```
+
 ---
 
-#### `POST /catalog/{supplier_product_id}` 🔒
+#### `POST /catalog/{id}` 🔒
 إضافة منتج واحد للكتالوج.
 
-#### `DELETE /catalog/{supplier_product_id}` 🔒
+**URL Param:** `{id}` — معرّف منتج المورد (موجود في الـ route لكن الـ Controller يعتمد على الـ body)
+
+**Request Body (JSON):**
+```json
+{
+  "supplier_product_id": 5
+}
+```
+
+| Field | النوع | المطلوب | الوصف |
+|---|---|---|---|
+| `supplier_product_id` | integer | ✅ | ID منتج المورد (يجب أن يكون موجودًا ومفعّلًا) |
+
+**Response (200):**
+```json
+{ "message": "تم إضافة المنتج إلى متجرك بنجاح" }
+```
+
+**أخطاء محتملة:**
+- `422` — المنتج غير متاح (`is_active = false`): `{ "message": "هذا المنتج غير متاح حاليًا" }`
+
+---
+
+#### `DELETE /catalog/{id}` 🔒
 إزالة منتج واحد من الكتالوج.
+
+**URL Param:** `{id}` — معرّف منتج المورد
+
+**Response (200):**
+```json
+{ "message": "تم إزالة المنتج من متجرك بنجاح" }
+```
 
 ---
 

@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Support\PublicFile;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -13,7 +14,7 @@ class SupplierResource extends JsonResource
             'id'             => $this->id,
             'name'           => $this->name,
             'description'    => $this->description,
-            'logo'           => $this->logo ? asset('storage/' . $this->logo) : null,
+            'logo'           => PublicFile::url($this->logo),
             'products_count' => $this->whenCounted('products'),
             'created_at'     => $this->created_at?->toDateTimeString(),
         ];

@@ -7,8 +7,8 @@ use App\Http\Requests\Company\StoreCompanyProductRequest;
 use App\Http\Requests\Company\UpdateCompanyProductRequest;
 use App\Http\Resources\CompanyProductResource;
 use App\Models\CompanyProduct;
+use App\Support\PublicFile;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Storage;
 
 class ProductController extends Controller
 {
@@ -62,7 +62,7 @@ class ProductController extends Controller
 
         if ($request->hasFile('image')) {
             if ($companyProduct->image) {
-                Storage::disk('public')->delete($companyProduct->image);
+                PublicFile::delete($companyProduct->image);
             }
             $data['image'] = $request->file('image')->store('products/company', 'public');
         }
@@ -80,7 +80,7 @@ class ProductController extends Controller
         $this->authorizeProduct($companyProduct);
 
         if ($companyProduct->image) {
-            Storage::disk('public')->delete($companyProduct->image);
+            PublicFile::delete($companyProduct->image);
         }
 
         $companyProduct->delete();

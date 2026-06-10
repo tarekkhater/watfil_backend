@@ -1,3 +1,13 @@
+# Watafl API
+
+Backend API مبني على Laravel 11 لإدارة الشركات والموردين ومنتجاتهم.
+
+📄 **توثيق الـ Endpoints (للفرونت):** [API_ENDPOINTS.md](API_ENDPOINTS.md) — شرح مفصّل لكل endpoint مع أمثلة تكامل.
+
+📄 **توثيق المشروع:** [DOCUMENTATION.md](DOCUMENTATION.md) — التثبيت، قاعدة البيانات، وهيكل المشروع.
+
+---
+
 <p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
 
 <p align="center">

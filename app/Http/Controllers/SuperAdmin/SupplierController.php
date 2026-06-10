@@ -7,8 +7,8 @@ use App\Http\Requests\SuperAdmin\StoreSupplierRequest;
 use App\Http\Requests\SuperAdmin\UpdateSupplierRequest;
 use App\Http\Resources\SupplierResource;
 use App\Models\Supplier;
+use App\Support\PublicFile;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Storage;
 
 class SupplierController extends Controller
 {
@@ -56,7 +56,7 @@ class SupplierController extends Controller
 
         if ($request->hasFile('logo')) {
             if ($supplier->logo) {
-                Storage::disk('public')->delete($supplier->logo);
+                PublicFile::delete($supplier->logo);
             }
             $data['logo'] = $request->file('logo')->store('logos/suppliers', 'public');
         }
@@ -72,7 +72,7 @@ class SupplierController extends Controller
     public function destroy(Supplier $supplier): JsonResponse
     {
         if ($supplier->logo) {
-            Storage::disk('public')->delete($supplier->logo);
+            PublicFile::delete($supplier->logo);
         }
 
         $supplier->delete();

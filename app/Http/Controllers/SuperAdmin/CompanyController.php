@@ -7,8 +7,8 @@ use App\Http\Requests\SuperAdmin\StoreCompanyRequest;
 use App\Http\Requests\SuperAdmin\UpdateCompanyRequest;
 use App\Http\Resources\CompanyResource;
 use App\Models\Company;
+use App\Support\PublicFile;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Storage;
 
 class CompanyController extends Controller
 {
@@ -56,7 +56,7 @@ class CompanyController extends Controller
 
         if ($request->hasFile('logo')) {
             if ($company->logo) {
-                Storage::disk('public')->delete($company->logo);
+                PublicFile::delete($company->logo);
             }
             $data['logo'] = $request->file('logo')->store('logos/companies', 'public');
         }
@@ -72,7 +72,7 @@ class CompanyController extends Controller
     public function destroy(Company $company): JsonResponse
     {
         if ($company->logo) {
-            Storage::disk('public')->delete($company->logo);
+            PublicFile::delete($company->logo);
         }
 
         $company->delete();

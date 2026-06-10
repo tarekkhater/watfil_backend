@@ -7,9 +7,9 @@ use App\Http\Requests\SuperAdmin\StoreSupplierProductRequest;
 use App\Http\Requests\SuperAdmin\UpdateSupplierProductRequest;
 use App\Http\Resources\SupplierProductResource;
 use App\Models\SupplierProduct;
+use App\Support\PublicFile;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 
 class SupplierProductController extends Controller
 {
@@ -67,7 +67,7 @@ class SupplierProductController extends Controller
 
         if ($request->hasFile('image')) {
             if ($supplierProduct->image) {
-                Storage::disk('public')->delete($supplierProduct->image);
+                PublicFile::delete($supplierProduct->image);
             }
             $data['image'] = $request->file('image')->store('products/supplier', 'public');
         }
@@ -83,7 +83,7 @@ class SupplierProductController extends Controller
     public function destroy(SupplierProduct $supplierProduct): JsonResponse
     {
         if ($supplierProduct->image) {
-            Storage::disk('public')->delete($supplierProduct->image);
+            PublicFile::delete($supplierProduct->image);
         }
 
         $supplierProduct->delete();
