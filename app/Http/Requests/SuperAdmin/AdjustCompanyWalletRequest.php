@@ -14,8 +14,10 @@ class AdjustCompanyWalletRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'amount' => 'required|numeric|min:0.01',
-            'type'   => 'required|in:credit,debit',
+            'amount'          => 'required|numeric|min:0.01',
+            'type'            => 'required|in:credit,debit',
+            'reason'          => 'nullable|string|max:500',
+            'idempotency_key' => 'nullable|string|max:100',
         ];
     }
 

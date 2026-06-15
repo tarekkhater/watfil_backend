@@ -46,4 +46,19 @@ class Company extends Authenticatable
     {
         return $this->belongsToMany(SupplierProduct::class, 'company_catalog');
     }
+
+    public function walletTransactions(): HasMany
+    {
+        return $this->hasMany(WalletTransaction::class);
+    }
+
+    public function commissionEvents(): HasMany
+    {
+        return $this->hasMany(CommissionEvent::class);
+    }
+
+    public function withdrawalRequests(): HasMany
+    {
+        return $this->hasMany(WithdrawalRequest::class);
+    }
 }

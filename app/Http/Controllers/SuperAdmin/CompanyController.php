@@ -8,10 +8,12 @@ use App\Http\Requests\SuperAdmin\StoreCompanyRequest;
 use App\Http\Requests\SuperAdmin\UpdateCompanyRequest;
 use App\Http\Requests\SuperAdmin\UpdateCompanyWalletRequest;
 use App\Http\Resources\CompanyResource;
+use App\Http\Resources\WalletTransactionResource;
 use App\Models\Company;
+use App\Models\WalletTransaction;
+use App\Services\Finance\WalletPostingService;
 use App\Support\PublicFile;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\DB;
 
 class CompanyController extends Controller
 {
@@ -95,18 +97,45 @@ class CompanyController extends Controller
 
     public function showWallet(Company $company): JsonResponse
     {
+        $latestTransactions = WalletTransaction::query()
+            ->with('meta')
+            ->where('company_id', $company->id)
+            ->latest('id')
+            ->limit(5)
+            ->get();
+
         return response()->json([
             'data' => [
                 'company_id'     => $company->id,
                 'company_name'   => $company->name,
                 'wallet_balance' => $company->wallet_balance,
+                'latest_transactions' => WalletTransactionResource::collection($latestTransactions),
             ],
         ]);
     }
 
-    public function updateWallet(UpdateCompanyWalletRequest $request, Company $company): JsonResponse
+    public function updateWallet(
+        UpdateCompanyWalletRequest $request,
+        Company $company,
+        WalletPostingService $walletPostingService
+    ): JsonResponse
     {
-        $company->update($request->validated());
+        $validated = $request->validated();
+        $targetBalance = (float) $validated['wallet_balance'];
+        $currentBalance = (float) $company->wallet_balance;
+        $difference = round(abs($targetBalance - $currentBalance), 2);
+
+        if ($difference > 0) {
+            $walletPostingService->post(
+                company: $company,
+                direction: $targetBalance > $currentBalance ? 'credit' : 'debit',
+                amount: $difference,
+                category: 'manual_set_balance',
+                description: $validated['reason'] ?? 'تعيين مباشر لرصيد المحفظة',
+                source: $company,
+                actor: $request->user()
+            );
+        }
 
         return response()->json([
             'message' => 'تم تحديث رصيد المحفظة بنجاح',
@@ -114,23 +143,28 @@ class CompanyController extends Controller
         ]);
     }
 
-    public function adjustWallet(AdjustCompanyWalletRequest $request, Company $company): JsonResponse
+    public function adjustWallet(
+        AdjustCompanyWalletRequest $request,
+        Company $company,
+        WalletPostingService $walletPostingService
+    ): JsonResponse
     {
         $validated = $request->validated();
 
-        DB::transaction(function () use ($company, $validated) {
-            $company = Company::lockForUpdate()->findOrFail($company->id);
-
-            if ($validated['type'] === 'credit') {
-                $company->increment('wallet_balance', $validated['amount']);
-            } else {
-                if ($company->wallet_balance < $validated['amount']) {
-                    abort(422, 'رصيد المحفظة غير كافٍ');
-                }
-
-                $company->decrement('wallet_balance', $validated['amount']);
-            }
-        });
+        $walletPostingService->post(
+            company: $company,
+            direction: $validated['type'],
+            amount: (float) $validated['amount'],
+            category: 'manual_adjustment',
+            description: $validated['reason'] ?? (
+                $validated['type'] === 'credit'
+                    ? 'إضافة رصيد إداري'
+                    : 'خصم رصيد إداري'
+            ),
+            idempotencyKey: $validated['idempotency_key'] ?? null,
+            source: $company,
+            actor: $request->user()
+        );
 
         return response()->json([
             'message' => $validated['type'] === 'credit'
