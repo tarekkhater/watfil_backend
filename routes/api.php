@@ -2,8 +2,10 @@
 
 use App\Http\Controllers\Company\AuthController as CompanyAuthController;
 use App\Http\Controllers\Company\CatalogController;
+use App\Http\Controllers\Company\CustomerController as CompanyCustomerController;
 use App\Http\Controllers\Company\FinanceController as CompanyFinanceController;
 use App\Http\Controllers\Company\ProductController as CompanyProductController;
+use App\Http\Controllers\Customer\AuthController as CustomerAuthController;
 use App\Http\Controllers\SuperAdmin\AuthController as SuperAdminAuthController;
 use App\Http\Controllers\SuperAdmin\CompanyController;
 use App\Http\Controllers\SuperAdmin\FinanceController as SuperAdminFinanceController;
@@ -97,5 +99,26 @@ Route::prefix('company')->group(function () {
         // Finance
         Route::get('wallet/transactions', [CompanyFinanceController::class, 'transactions']);
         Route::post('wallet/withdrawals', [CompanyFinanceController::class, 'storeWithdrawal']);
+
+        // Customers
+        Route::get('customers', [CompanyCustomerController::class, 'index']);
+    });
+});
+
+/*
+|--------------------------------------------------------------------------
+| Customer Routes
+|--------------------------------------------------------------------------
+*/
+Route::prefix('customer')->group(function () {
+
+    Route::post('register', [CustomerAuthController::class, 'register']);
+    Route::post('login', [CustomerAuthController::class, 'login']);
+
+    Route::middleware(['auth:sanctum', 'customer'])->group(function () {
+
+        Route::post('logout', [CustomerAuthController::class, 'logout']);
+        Route::get('me', [CustomerAuthController::class, 'me']);
+        Route::patch('profile', [CustomerAuthController::class, 'updateProfile']);
     });
 });

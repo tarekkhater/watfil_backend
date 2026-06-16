@@ -61,4 +61,16 @@ class Company extends Authenticatable
     {
         return $this->hasMany(WithdrawalRequest::class);
     }
+
+    public function customerLinks(): HasMany
+    {
+        return $this->hasMany(CustomerCompanyLink::class);
+    }
+
+    public function customers(): BelongsToMany
+    {
+        return $this->belongsToMany(Customer::class, 'customer_company_links')
+            ->withPivot(['status', 'linked_at'])
+            ->withTimestamps();
+    }
 }
