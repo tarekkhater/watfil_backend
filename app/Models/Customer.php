@@ -44,4 +44,9 @@ class Customer extends Authenticatable
             ->withPivot(['status', 'linked_at'])
             ->withTimestamps();
     }
+
+    public function orders(): HasMany
+    {
+        return $this->hasMany(Order::class);
+    }
 }
