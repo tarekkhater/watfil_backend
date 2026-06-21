@@ -2,7 +2,7 @@
     "info": {
         "name": "Watfil API — Complete",
         "_postman_id": "watfil-api-complete-2026-v3",
-        "description": "# Watfil API — 89 Endpoint\n\n**Base URL:** `{{base_url}}` = `http://localhost:8000/api`\n\n---\n\n## البداية السريعة\n\n```\nphp artisan migrate --seed\nphp artisan serve\n```\n\n1. Import هذا الملف في Postman\n2. شغّل **00 — Setup Flow** (13 خطوة)\n3. راجع **01 — Product Catalog Flow** لفهم الأنواع والأقسام\n4. استخدم مجلد **All Endpoints** لأي endpoint\n\n**Super Admin:** `admin@watafl.com` / `Admin@1234`\n\n---\n\n## كatalog المنتجات (أنواع + أقسام)\n\n```\nأنواع (Product Types)     →  device | accessories | stages\n        ↓\nأقسام (Categories)        →  RO devices, cartridge, stage one…\n        ↓\nمنتج مورد (Supplier Product)  →  category_id مطلوب عند الإضافة\n        ↓\nمتجر الشركة (Company Product / Catalog)\n```\n\n| الخطوة | Endpoint | المتغير |\n|--------|----------|---------|\n| 1 | GET /super-admin/product-types | product_type_id |\n| 2 | GET /super-admin/categories?product_type_id= | category_id |\n| 3 | POST /super-admin/supplier-products | supplier_product_id |\n| 4 | POST /company/catalog/add | — |\n| 5 | GET /public/companies/{id}/products?category_id= | — |\n\n**Seeder:** `php artisan migrate --seed` يملأ الأنواع والأقسام من `types table.txt` و `categoriesTable.txt`\n\n---\n\n## الطلب بالتقسيط (Installment)\n\n```\nتعريف خطط على المنتج (Admin/Company)  →  installment_plans[]\n        ↓\nعرض للعميل (Public)  →  GET .../installment-plans\n        ↓\nإنشاء الطلب  →  payment_type: installment + installment_plan { months, down_payment, installment_amount }\n```\n\n| القاعدة | التفاصيل |\n|---------|----------|\n| منتج واحد | طلب التقسيط = item واحد فقط |\n| تطابق الخطة | القيم الثلاث يجب أن تطابق خطة معرّفة على المنتج |\n| total_amount | مقدم + (قسط × عدد الأشهر) — يُحسب ويُخزَّن في الطلب |\n| كاش | لا ترسل `installment_plan` مع `payment_type: cash` |\n\n**مدد مسموحة:** 3, 6, 9, 12, 18, 24 شهر (حسب `CompanyProductInstallmentPlan`)\n\n**Postman:** شغّل **05 — Installment Order Flow** بعد Setup Flow\n\n---\n\n## Headers\n\n| Header | القيمة |\n|--------|--------|\n| Accept | application/json |\n| Authorization | Bearer `{token}` |\n| Content-Type | application/json |\n\n---\n\n## شكل الاستجابة\n\n- **قائمة:** `{ data: [], meta: { total, current_page, last_page, per_page } }`\n- **طفرات:** `{ message, data }`\n- **Auth:** `{ message, token, customer }`\n- **422:** `{ message, errors: { field: [] } }`\n\n---\n\n## فهرس كل الـ Endpoints (89)\n\n- `GET /public/governorates` — GET Governorates\n- `GET /public/product-types` — GET Product Types\n- `GET /public/categories` — GET Categories\n- `GET /public/companies` — GET Companies by Governorate\n- `GET /public/companies/{{company_id}}` — GET Company Details\n- `GET /public/companies/{{company_id}}/products` — GET Store Products\n- `GET /public/companies/{{company_id}}/products/{{product_id}}/installment-plans` — GET Product Installment Plans\n- `GET /public/maintenance/lookups` — GET Maintenance Lookups\n- `POST /super-admin/login` — POST Login\n- `POST /super-admin/logout` — POST Logout\n- `GET /super-admin/me` — GET Me\n- `GET /super-admin/governorates` — GET Governorates\n- `GET /super-admin/product-types` — GET List Product Types\n- `POST /super-admin/product-types` — POST Create Product Type\n- `GET /super-admin/product-types/{{product_type_id}}` — GET Show Product Type\n- `POST /super-admin/product-types/{{product_type_id}}` — POST Update Product Type\n- `DELETE /super-admin/product-types/{{product_type_id}}` — DELETE Product Type\n- `GET /super-admin/categories` — GET List Categories\n- `POST /super-admin/categories` — POST Create Category\n- `GET /super-admin/categories/{{category_id}}` — GET Show Category\n- `POST /super-admin/categories/{{category_id}}` — POST Update Category\n- `DELETE /super-admin/categories/{{category_id}}` — DELETE Category\n- `GET /super-admin/companies` — GET List Companies\n- `POST /super-admin/companies` — POST Create Company\n- `GET /super-admin/companies/{{company_id}}` — GET Show Company\n- `POST /super-admin/companies/{{company_id}}` — POST Update Company\n- `PATCH /super-admin/companies/{{company_id}}/toggle-status` — PATCH Toggle Status\n- `DELETE /super-admin/companies/{{company_id}}` — DELETE Company\n- `GET /super-admin/companies/{{company_id}}/wallet` — GET Show Wallet\n- `PATCH /super-admin/companies/{{company_id}}/wallet` — PATCH Set Balance\n- `POST /super-admin/companies/{{company_id}}/wallet/adjust` — POST Adjust Wallet\n- `GET /super-admin/companies/{{company_id}}/wallet/transactions` — GET Wallet Transactions\n- `GET /super-admin/finance/commissions/summary` — GET Commission Summary\n- `GET /super-admin/finance/withdrawal-requests` — GET Withdrawal Requests\n- `PATCH /super-admin/finance/withdrawal-requests/{{withdrawal_request_id}}/approve` — PATCH Approve Withdrawal\n- `PATCH /super-admin/finance/withdrawal-requests/{{withdrawal_request_id}}/reject` — PATCH Reject Withdrawal\n- `PATCH /super-admin/finance/withdrawal-requests/{{withdrawal_request_id}}/pay` — PATCH Pay Withdrawal\n- `GET /super-admin/suppliers` — GET List Suppliers\n- `POST /super-admin/suppliers` — POST Create Supplier\n- `GET /super-admin/suppliers/{{supplier_id}}` — GET Show Supplier\n- `POST /super-admin/suppliers/{{supplier_id}}` — POST Update Supplier\n- `DELETE /super-admin/suppliers/{{supplier_id}}` — DELETE Supplier\n- `GET /super-admin/supplier-products` — GET List Supplier Products\n- `POST /super-admin/supplier-products` — POST Create Supplier Product\n- `GET /super-admin/supplier-products/{{supplier_product_id}}` — GET Show Supplier Product\n- `POST /super-admin/supplier-products/{{supplier_product_id}}` — POST Update Supplier Product\n- `PATCH /super-admin/supplier-products/{{supplier_product_id}}/toggle-status` — PATCH Toggle Product Status\n- `DELETE /super-admin/supplier-products/{{supplier_product_id}}` — DELETE Supplier Product\n- `GET /super-admin/orders` — GET List Orders\n- `GET /super-admin/orders/{{order_id}}` — GET Show Order\n- `POST /company/login` — POST Login\n- `POST /company/logout` — POST Logout\n- `GET /company/me` — GET Me\n- `GET /company/products` — GET List Products\n- `POST /company/products` — POST Create Product\n- `GET /company/products/{{product_id}}` — GET Show Product\n- `POST /company/products/{{product_id}}` — POST Update Product\n- `DELETE /company/products/{{product_id}}` — DELETE Product\n- `GET /company/catalog/available` — GET Available Catalog\n- `GET /company/catalog/mine` — GET My Catalog\n- `POST /company/catalog/add` — POST Add to Catalog (bulk)\n- `POST /company/catalog/remove` — POST Remove from Catalog (bulk)\n- `POST /company/catalog/{{supplier_product_id}}` — POST Add Single to Catalog\n- `DELETE /company/catalog/{{supplier_product_id}}` — DELETE Remove from Catalog\n- `GET /company/wallet/transactions` — GET Wallet Transactions\n- `POST /company/wallet/withdrawals` — POST Request Withdrawal\n- `GET /company/customers` — GET List Customers\n- `GET /company/orders` — GET List Orders\n- `POST /company/orders` — POST Create Order\n- `GET /company/orders/{{order_id}}` — GET Show Order\n- `PATCH /company/orders/{{order_id}}/status` — PATCH Update Order Status\n- `POST /customer/register` — POST Register\n- `POST /customer/login` — POST Login\n- `POST /customer/logout` — POST Logout\n- `GET /customer/me` — GET Me\n- `PATCH /customer/profile` — PATCH Update Profile\n- `POST /customer/auth/check-phone` — POST Check Phone\n- `POST /customer/register/request-otp` — POST Request OTP\n- `POST /customer/register/verify` — POST Verify Registration\n- `GET /customer/orders` — GET List Orders\n- `POST /customer/orders` — POST Create Order\n- `GET /customer/orders/{{order_id}}` — GET Show Order\n- `GET /customer/maintenance-requests` — GET List Maintenance Requests\n- `POST /customer/maintenance-requests` — POST Create Maintenance Request\n- `GET /customer/maintenance-requests/{{maintenance_request_id}}` — GET Show Maintenance Request\n- `POST /customer/companies/{{company_id}}/like` — POST Like Company\n- `DELETE /customer/companies/{{company_id}}/like` — DELETE Unlike Company\n- `POST /customer/companies/{{company_id}}/rating` — POST Rate Company\n- `DELETE /customer/companies/{{company_id}}/rating` — DELETE Remove Rating\n\n\n---\n\n## سيناريوهات\n\n**طلب + عمولة:** pending → processing → completed (5% إلا referral/internal)\n\n**سحب:** request → approve → pay (أو reject + reason)\n\n**عميل:** register + company_id للربط بالشركة",
+        "description": "# Watfil API — 89 Endpoint\n\n**Base URL:** `{{base_url}}` = `http://localhost:8000/api`\n\n---\n\n## البداية السريعة\n\n```\nphp artisan migrate --seed\nphp artisan serve\n```\n\n1. Import هذا الملف في Postman\n2. شغّل **00 — Setup Flow** (13 خطوة)\n3. راجع **01 — Product Catalog Flow** لفهم الأنواع والأقسام\n4. استخدم مجلد **All Endpoints** لأي endpoint\n\n**Super Admin:** `admin@watafl.com` / `Admin@1234`\n\n---\n\n## كatalog المنتجات (أنواع + أقسام)\n\n```\nأنواع (Product Types)     →  device | accessories | stages\n        ↓\nأقسام (Categories)        →  RO devices, cartridge, stage one…\n        ↓\nمنتج مورد (Supplier Product)  →  category_id مطلوب عند الإضافة\n        ↓\nمتجر الشركة (Company Product / Catalog)\n```\n\n| الخطوة | Endpoint | المتغير |\n|--------|----------|---------|\n| 1 | GET /super-admin/product-types | product_type_id |\n| 2 | GET /super-admin/categories?product_type_id= | category_id |\n| 3 | POST /super-admin/supplier-products | supplier_product_id |\n| 4 | POST /company/catalog/add | — |\n| 5 | GET /public/companies/{id}/products?category_id= | — |\n\n**Seeder:** `php artisan migrate --seed` يملأ الأنواع والأقسام من `types table.txt` و `categoriesTable.txt`\n\n---\n\n## الطلب بالتقسيط (Installment)\n\n```\nتعريف خطط على المنتج (Admin/Company)  →  installment_plans[]\n        ↓\nعرض للعميل (Public)  →  GET .../installment-plans\n        ↓\nإنشاء الطلب  →  payment_type: installment + installment_plan { months, down_payment, installment_amount }\n```\n\n| القاعدة | التفاصيل |\n|---------|----------|\n| منتج واحد | طلب التقسيط = item واحد فقط |\n| تطابق الخطة | القيم الثلاث يجب أن تطابق خطة معرّفة على المنتج |\n| total_amount | مقدم + (قسط × عدد الأشهر) — يُحسب ويُخزَّن في الطلب |\n| كاش | لا ترسل `installment_plan` مع `payment_type: cash` |\n\n**مدد مسموحة:** 3, 6, 9, 12, 18, 24 شهر (حسب `CompanyProductInstallmentPlan`)\n\n**Postman:** شغّل **05 — Installment Order Flow** بعد Setup Flow\n\n---\n\n## فلترة منتجات المتجر (User / Public)\n\n```\nGET /public/product-types\n        ↓\nGET /public/categories?product_type_id=&parent_category_id=0\n        ↓ (للمراحل) GET /public/categories?parent_category_id={stages_id}\n        ↓\nGET /public/companies/{company_id}/products?...\n```\n\n| فلتر | Query | متى |\n|------|-------|-----|\n| نوع | product_type=device | تبويب «فلتر مياه» |\n| نوع | product_type_id=1 | نفس الفكرة بـ id |\n| قسم | category_id=5 | اختيار «RO devices» |\n| قسم + فرعي | parent_category_id=12 | كل منتجات stages |\n| مرحلة | number_of_stages=3 | مرحلة 3 فقط |\n\n**Postman:** **06 — User Store Filter Flow**\n\n---\n\n## Headers\n\n| Header | القيمة |\n|--------|--------|\n| Accept | application/json |\n| Authorization | Bearer `{token}` |\n| Content-Type | application/json |\n\n---\n\n## شكل الاستجابة\n\n- **قائمة:** `{ data: [], meta: { total, current_page, last_page, per_page } }`\n- **طفرات:** `{ message, data }`\n- **Auth:** `{ message, token, customer }`\n- **422:** `{ message, errors: { field: [] } }`\n\n---\n\n## فهرس كل الـ Endpoints (89)\n\n- `GET /public/governorates` — GET Governorates\n- `GET /public/product-types` — GET Product Types\n- `GET /public/categories` — GET Categories\n- `GET /public/companies` — GET Companies by Governorate\n- `GET /public/companies/{{company_id}}` — GET Company Details\n- `GET /public/companies/{{company_id}}/products` — GET Store Products\n- `GET /public/companies/{{company_id}}/products/{{product_id}}/installment-plans` — GET Product Installment Plans\n- `GET /public/maintenance/lookups` — GET Maintenance Lookups\n- `POST /super-admin/login` — POST Login\n- `POST /super-admin/logout` — POST Logout\n- `GET /super-admin/me` — GET Me\n- `GET /super-admin/governorates` — GET Governorates\n- `GET /super-admin/product-types` — GET List Product Types\n- `POST /super-admin/product-types` — POST Create Product Type\n- `GET /super-admin/product-types/{{product_type_id}}` — GET Show Product Type\n- `POST /super-admin/product-types/{{product_type_id}}` — POST Update Product Type\n- `DELETE /super-admin/product-types/{{product_type_id}}` — DELETE Product Type\n- `GET /super-admin/categories` — GET List Categories\n- `POST /super-admin/categories` — POST Create Category\n- `GET /super-admin/categories/{{category_id}}` — GET Show Category\n- `POST /super-admin/categories/{{category_id}}` — POST Update Category\n- `DELETE /super-admin/categories/{{category_id}}` — DELETE Category\n- `GET /super-admin/companies` — GET List Companies\n- `POST /super-admin/companies` — POST Create Company\n- `GET /super-admin/companies/{{company_id}}` — GET Show Company\n- `POST /super-admin/companies/{{company_id}}` — POST Update Company\n- `PATCH /super-admin/companies/{{company_id}}/toggle-status` — PATCH Toggle Status\n- `DELETE /super-admin/companies/{{company_id}}` — DELETE Company\n- `GET /super-admin/companies/{{company_id}}/wallet` — GET Show Wallet\n- `PATCH /super-admin/companies/{{company_id}}/wallet` — PATCH Set Balance\n- `POST /super-admin/companies/{{company_id}}/wallet/adjust` — POST Adjust Wallet\n- `GET /super-admin/companies/{{company_id}}/wallet/transactions` — GET Wallet Transactions\n- `GET /super-admin/finance/commissions/summary` — GET Commission Summary\n- `GET /super-admin/finance/withdrawal-requests` — GET Withdrawal Requests\n- `PATCH /super-admin/finance/withdrawal-requests/{{withdrawal_request_id}}/approve` — PATCH Approve Withdrawal\n- `PATCH /super-admin/finance/withdrawal-requests/{{withdrawal_request_id}}/reject` — PATCH Reject Withdrawal\n- `PATCH /super-admin/finance/withdrawal-requests/{{withdrawal_request_id}}/pay` — PATCH Pay Withdrawal\n- `GET /super-admin/suppliers` — GET List Suppliers\n- `POST /super-admin/suppliers` — POST Create Supplier\n- `GET /super-admin/suppliers/{{supplier_id}}` — GET Show Supplier\n- `POST /super-admin/suppliers/{{supplier_id}}` — POST Update Supplier\n- `DELETE /super-admin/suppliers/{{supplier_id}}` — DELETE Supplier\n- `GET /super-admin/supplier-products` — GET List Supplier Products\n- `POST /super-admin/supplier-products` — POST Create Supplier Product\n- `GET /super-admin/supplier-products/{{supplier_product_id}}` — GET Show Supplier Product\n- `POST /super-admin/supplier-products/{{supplier_product_id}}` — POST Update Supplier Product\n- `PATCH /super-admin/supplier-products/{{supplier_product_id}}/toggle-status` — PATCH Toggle Product Status\n- `DELETE /super-admin/supplier-products/{{supplier_product_id}}` — DELETE Supplier Product\n- `GET /super-admin/orders` — GET List Orders\n- `GET /super-admin/orders/{{order_id}}` — GET Show Order\n- `POST /company/login` — POST Login\n- `POST /company/logout` — POST Logout\n- `GET /company/me` — GET Me\n- `GET /company/products` — GET List Products\n- `POST /company/products` — POST Create Product\n- `GET /company/products/{{product_id}}` — GET Show Product\n- `POST /company/products/{{product_id}}` — POST Update Product\n- `DELETE /company/products/{{product_id}}` — DELETE Product\n- `GET /company/catalog/available` — GET Available Catalog\n- `GET /company/catalog/mine` — GET My Catalog\n- `POST /company/catalog/add` — POST Add to Catalog (bulk)\n- `POST /company/catalog/remove` — POST Remove from Catalog (bulk)\n- `POST /company/catalog/{{supplier_product_id}}` — POST Add Single to Catalog\n- `DELETE /company/catalog/{{supplier_product_id}}` — DELETE Remove from Catalog\n- `GET /company/wallet/transactions` — GET Wallet Transactions\n- `POST /company/wallet/withdrawals` — POST Request Withdrawal\n- `GET /company/customers` — GET List Customers\n- `GET /company/orders` — GET List Orders\n- `POST /company/orders` — POST Create Order\n- `GET /company/orders/{{order_id}}` — GET Show Order\n- `PATCH /company/orders/{{order_id}}/status` — PATCH Update Order Status\n- `POST /customer/register` — POST Register\n- `POST /customer/login` — POST Login\n- `POST /customer/logout` — POST Logout\n- `GET /customer/me` — GET Me\n- `PATCH /customer/profile` — PATCH Update Profile\n- `POST /customer/auth/check-phone` — POST Check Phone\n- `POST /customer/register/request-otp` — POST Request OTP\n- `POST /customer/register/verify` — POST Verify Registration\n- `GET /customer/orders` — GET List Orders\n- `POST /customer/orders` — POST Create Order\n- `GET /customer/orders/{{order_id}}` — GET Show Order\n- `GET /customer/maintenance-requests` — GET List Maintenance Requests\n- `POST /customer/maintenance-requests` — POST Create Maintenance Request\n- `GET /customer/maintenance-requests/{{maintenance_request_id}}` — GET Show Maintenance Request\n- `POST /customer/companies/{{company_id}}/like` — POST Like Company\n- `DELETE /customer/companies/{{company_id}}/like` — DELETE Unlike Company\n- `POST /customer/companies/{{company_id}}/rating` — POST Rate Company\n- `DELETE /customer/companies/{{company_id}}/rating` — DELETE Remove Rating\n\n\n---\n\n## سيناريوهات\n\n**طلب + عمولة:** pending → processing → completed (5% إلا referral/internal)\n\n**سحب:** request → approve → pay (أو reject + reason)\n\n**عميل:** register + company_id للربط بالشركة",
         "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
     },
     "variable": [
@@ -1138,8 +1138,23 @@
                             ],
                             "query": null
                         },
-                        "description": "## GET /public/product-types\n\n**Auth:** لا\n\n**Response:** قائمة الأنواع (device | accessories | stages)\n\n**استخدمها:** اختر `product_type_id` ثم اطلب الأقسام المناسبة"
-                    }
+                        "description": "## GET /public/product-types\n\n**Auth:** لا — للمستخدم / المتجر\n\n**Response:** الأنواع الثلاثة\n```json\n{ \"data\": [{ \"id\": 1, \"name\": \"device\", \"name_ar\": \"فلتر مياه\" }] }\n```\n\n**UI:** تبويبات الفلترة الأولى → خزّن `product_type_id` أو استخدم `product_type` slug في products"
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "if (pm.response.code >= 200 && pm.response.code < 300) {",
+                                    "  var res = pm.response.json();",
+                                    "  var item = (res.data || []).find(function(x) { return x.name === 'device'; }); if (!item && res.data && res.data[0]) item = res.data[0];",
+                                    "  if (item && item.id) pm.collectionVariables.set(\"product_type_id\", String(item.id));",
+                                    "}"
+                                ]
+                            }
+                        }
+                    ]
                 },
                 {
                     "name": "9. Public Categories",
@@ -1173,8 +1188,23 @@
                                 }
                             ]
                         },
-                        "description": "## GET /public/categories\n\n**Auth:** لا\n\n**Query:**\n| Param | الوصف |\n|-------|--------|\n| product_type_id | نوع المنتج (مطلوب للفلترة) |\n| parent_category_id | 0 = أقسام جذر فقط |\n| number_of_stages | لأقسام المراحل (1–8) |\n\n**استخدمها:** اختر `category_id` لعرض منتجات المتجر"
-                    }
+                        "description": "## GET /public/categories\n\n**Auth:** لا — للمستخدم / المتجر\n\n**Query:**\n| Param | الوصف |\n|-------|--------|\n| product_type_id | أقسام نوع معيّن (device / accessories / stages) |\n| parent_category_id | `0` = أقسام جذر — أو id قسم أب (مثل stages → stage one…) |\n| number_of_stages | 1–8 لأقسام المراحل الفرعية |\n\n**UI:** بعد اختيار النوع → اعرض الأقسام → عند الاختيار استخدم `category_id` في products"
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "if (pm.response.code >= 200 && pm.response.code < 300) {",
+                                    "  var res = pm.response.json();",
+                                    "  var item = (res.data || []).find(function(x) { return x.name === 'RO devices'; }); if (!item && res.data && res.data[0]) item = res.data[0];",
+                                    "  if (item && item.id) pm.collectionVariables.set(\"category_id\", String(item.id));",
+                                    "}"
+                                ]
+                            }
+                        }
+                    ]
                 },
                 {
                     "name": "10. Store Products by category",
@@ -1210,7 +1240,7 @@
                                 }
                             ]
                         },
-                        "description": "## GET /public/companies/{company}/products\n\n**Auth:** لا\n\n**Query:** page, category_id, product_type_id, number_of_stages\n\n**Response:** منتجات + category + installment_plans"
+                        "description": "## GET /public/companies/{company}/products\n\n**Auth:** لا — متجر الشركة للمستخدم\n\n**Query (فلترة — اختياري):**\n| Param | مثال | الوصف |\n|-------|------|--------|\n| product_type | device | فلترة بالنوع (slug) |\n| product_type_id | 1 | فلترة بالنوع (id) |\n| category_id | 5 | قسم محدّد (RO devices, اصلاح…) |\n| parent_category_id | 12 | القسم + أقسامه الفرعية (مثل stages + stage one…) |\n| number_of_stages | 3 | منتجات مرحلة 3 |\n| page | 1 | ترقيم |\n\n**Flow UI:**\n1. GET product-types → اختيار نوع\n2. GET categories?product_type_id= → اختيار قسم\n3. GET products?category_id= **أو** ?product_type= **أو** ?parent_category_id=\n\n**Response:** منتجات الشركة + الكatalog مع `category` و `installment_plans`"
                     }
                 }
             ]
@@ -2346,7 +2376,280 @@
             ]
         },
         {
-            "name": "06 — Public Store Flow",
+            "name": "06 — User Store Filter Flow",
+            "description": "فلترة منتجات المتجر للمستخدم — **بدون تسجيل**\n\nشغّل **00 Setup Flow** أولاً لملء company_id\n\nيملأ: product_type_id, category_id",
+            "item": [
+                {
+                    "name": "1. Product Types (tabs)",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/public/product-types",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "public",
+                                "product-types"
+                            ],
+                            "query": null
+                        },
+                        "description": "## GET /public/product-types\n\n**Auth:** لا — للمستخدم / المتجر\n\n**Response:** الأنواع الثلاثة\n```json\n{ \"data\": [{ \"id\": 1, \"name\": \"device\", \"name_ar\": \"فلتر مياه\" }] }\n```\n\n**UI:** تبويبات الفلترة الأولى → خزّن `product_type_id` أو استخدم `product_type` slug في products"
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "if (pm.response.code >= 200 && pm.response.code < 300) {",
+                                    "  var res = pm.response.json();",
+                                    "  var item = (res.data || []).find(function(x) { return x.name === 'device'; }); if (!item && res.data && res.data[0]) item = res.data[0];",
+                                    "  if (item && item.id) pm.collectionVariables.set(\"product_type_id\", String(item.id));",
+                                    "}"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "2. Root Categories by Type",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/public/categories?product_type_id={{product_type_id}}&parent_category_id=0",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "public",
+                                "categories"
+                            ],
+                            "query": [
+                                {
+                                    "key": "product_type_id",
+                                    "value": "{{product_type_id}}",
+                                    "disabled": false
+                                },
+                                {
+                                    "key": "parent_category_id",
+                                    "value": "0",
+                                    "disabled": false
+                                }
+                            ]
+                        },
+                        "description": "## GET /public/categories\n\n**Auth:** لا — للمستخدم / المتجر\n\n**Query:**\n| Param | الوصف |\n|-------|--------|\n| product_type_id | أقسام نوع معيّن (device / accessories / stages) |\n| parent_category_id | `0` = أقسام جذر — أو id قسم أب (مثل stages → stage one…) |\n| number_of_stages | 1–8 لأقسام المراحل الفرعية |\n\n**UI:** بعد اختيار النوع → اعرض الأقسام → عند الاختيار استخدم `category_id` في products"
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "if (pm.response.code >= 200 && pm.response.code < 300) {",
+                                    "  var res = pm.response.json();",
+                                    "  var item = (res.data || []).find(function(x) { return x.name === 'RO devices'; }); if (!item && res.data && res.data[0]) item = res.data[0];",
+                                    "  if (item && item.id) pm.collectionVariables.set(\"category_id\", String(item.id));",
+                                    "}"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "3. Products by Type (slug)",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/public/companies/{{company_id}}/products?page=1&product_type=device",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "public",
+                                "companies",
+                                "{{company_id}}",
+                                "products"
+                            ],
+                            "query": [
+                                {
+                                    "key": "page",
+                                    "value": "1",
+                                    "disabled": false
+                                },
+                                {
+                                    "key": "product_type",
+                                    "value": "device",
+                                    "disabled": false
+                                }
+                            ]
+                        },
+                        "description": "## GET /public/companies/{company}/products\n\n**Auth:** لا — متجر الشركة للمستخدم\n\n**Query (فلترة — اختياري):**\n| Param | مثال | الوصف |\n|-------|------|--------|\n| product_type | device | فلترة بالنوع (slug) |\n| product_type_id | 1 | فلترة بالنوع (id) |\n| category_id | 5 | قسم محدّد (RO devices, اصلاح…) |\n| parent_category_id | 12 | القسم + أقسامه الفرعية (مثل stages + stage one…) |\n| number_of_stages | 3 | منتجات مرحلة 3 |\n| page | 1 | ترقيم |\n\n**Flow UI:**\n1. GET product-types → اختيار نوع\n2. GET categories?product_type_id= → اختيار قسم\n3. GET products?category_id= **أو** ?product_type= **أو** ?parent_category_id=\n\n**Response:** منتجات الشركة + الكatalog مع `category` و `installment_plans`"
+                    }
+                },
+                {
+                    "name": "4. Products by Category",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/public/companies/{{company_id}}/products?page=1&category_id={{category_id}}",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "public",
+                                "companies",
+                                "{{company_id}}",
+                                "products"
+                            ],
+                            "query": [
+                                {
+                                    "key": "page",
+                                    "value": "1",
+                                    "disabled": false
+                                },
+                                {
+                                    "key": "category_id",
+                                    "value": "{{category_id}}",
+                                    "disabled": false
+                                }
+                            ]
+                        },
+                        "description": "## GET /public/companies/{company}/products\n\n**Auth:** لا — متجر الشركة للمستخدم\n\n**Query (فلترة — اختياري):**\n| Param | مثال | الوصف |\n|-------|------|--------|\n| product_type | device | فلترة بالنوع (slug) |\n| product_type_id | 1 | فلترة بالنوع (id) |\n| category_id | 5 | قسم محدّد (RO devices, اصلاح…) |\n| parent_category_id | 12 | القسم + أقسامه الفرعية (مثل stages + stage one…) |\n| number_of_stages | 3 | منتجات مرحلة 3 |\n| page | 1 | ترقيم |\n\n**Flow UI:**\n1. GET product-types → اختيار نوع\n2. GET categories?product_type_id= → اختيار قسم\n3. GET products?category_id= **أو** ?product_type= **أو** ?parent_category_id=\n\n**Response:** منتجات الشركة + الكatalog مع `category` و `installment_plans`"
+                    }
+                },
+                {
+                    "name": "5. Products by Type ID",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/public/companies/{{company_id}}/products?page=1&product_type_id={{product_type_id}}",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "public",
+                                "companies",
+                                "{{company_id}}",
+                                "products"
+                            ],
+                            "query": [
+                                {
+                                    "key": "page",
+                                    "value": "1",
+                                    "disabled": false
+                                },
+                                {
+                                    "key": "product_type_id",
+                                    "value": "{{product_type_id}}",
+                                    "disabled": false
+                                }
+                            ]
+                        },
+                        "description": "## GET /public/companies/{company}/products\n\n**Auth:** لا — متجر الشركة للمستخدم\n\n**Query (فلترة — اختياري):**\n| Param | مثال | الوصف |\n|-------|------|--------|\n| product_type | device | فلترة بالنوع (slug) |\n| product_type_id | 1 | فلترة بالنوع (id) |\n| category_id | 5 | قسم محدّد (RO devices, اصلاح…) |\n| parent_category_id | 12 | القسم + أقسامه الفرعية (مثل stages + stage one…) |\n| number_of_stages | 3 | منتجات مرحلة 3 |\n| page | 1 | ترقيم |\n\n**Flow UI:**\n1. GET product-types → اختيار نوع\n2. GET categories?product_type_id= → اختيار قسم\n3. GET products?category_id= **أو** ?product_type= **أو** ?parent_category_id=\n\n**Response:** منتجات الشركة + الكatalog مع `category` و `installment_plans`"
+                    }
+                },
+                {
+                    "name": "6. Stage Sub-Categories",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/public/categories?parent_category_id={{category_id}}",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "public",
+                                "categories"
+                            ],
+                            "query": [
+                                {
+                                    "key": "parent_category_id",
+                                    "value": "{{category_id}}",
+                                    "disabled": false
+                                }
+                            ]
+                        },
+                        "description": "## GET /public/categories\n\n**Auth:** لا — للمستخدم / المتجر\n\n**Query:**\n| Param | الوصف |\n|-------|--------|\n| product_type_id | أقسام نوع معيّن (device / accessories / stages) |\n| parent_category_id | `0` = أقسام جذر — أو id قسم أب (مثل stages → stage one…) |\n| number_of_stages | 1–8 لأقسام المراحل الفرعية |\n\n**UI:** بعد اختيار النوع → اعرض الأقسام → عند الاختيار استخدم `category_id` في products"
+                    }
+                },
+                {
+                    "name": "7. Products by Stage Number",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/public/companies/{{company_id}}/products?page=1&number_of_stages=3",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "public",
+                                "companies",
+                                "{{company_id}}",
+                                "products"
+                            ],
+                            "query": [
+                                {
+                                    "key": "page",
+                                    "value": "1",
+                                    "disabled": false
+                                },
+                                {
+                                    "key": "number_of_stages",
+                                    "value": "3",
+                                    "disabled": false
+                                }
+                            ]
+                        },
+                        "description": "## GET /public/companies/{company}/products\n\n**Auth:** لا — متجر الشركة للمستخدم\n\n**Query (فلترة — اختياري):**\n| Param | مثال | الوصف |\n|-------|------|--------|\n| product_type | device | فلترة بالنوع (slug) |\n| product_type_id | 1 | فلترة بالنوع (id) |\n| category_id | 5 | قسم محدّد (RO devices, اصلاح…) |\n| parent_category_id | 12 | القسم + أقسامه الفرعية (مثل stages + stage one…) |\n| number_of_stages | 3 | منتجات مرحلة 3 |\n| page | 1 | ترقيم |\n\n**Flow UI:**\n1. GET product-types → اختيار نوع\n2. GET categories?product_type_id= → اختيار قسم\n3. GET products?category_id= **أو** ?product_type= **أو** ?parent_category_id=\n\n**Response:** منتجات الشركة + الكatalog مع `category` و `installment_plans`"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "07 — Public Store Flow",
             "description": "تصفح بدون تسجيل — يشمل فلترة بالأقسام وخطط التقسيط",
             "item": [
                 {
@@ -2370,8 +2673,23 @@
                             ],
                             "query": null
                         },
-                        "description": "## GET /public/product-types\n\n**Auth:** لا\n\n**Response:** قائمة الأنواع (device | accessories | stages)\n\n**استخدمها:** اختر `product_type_id` ثم اطلب الأقسام المناسبة"
-                    }
+                        "description": "## GET /public/product-types\n\n**Auth:** لا — للمستخدم / المتجر\n\n**Response:** الأنواع الثلاثة\n```json\n{ \"data\": [{ \"id\": 1, \"name\": \"device\", \"name_ar\": \"فلتر مياه\" }] }\n```\n\n**UI:** تبويبات الفلترة الأولى → خزّن `product_type_id` أو استخدم `product_type` slug في products"
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "if (pm.response.code >= 200 && pm.response.code < 300) {",
+                                    "  var res = pm.response.json();",
+                                    "  var item = (res.data || []).find(function(x) { return x.name === 'device'; }); if (!item && res.data && res.data[0]) item = res.data[0];",
+                                    "  if (item && item.id) pm.collectionVariables.set(\"product_type_id\", String(item.id));",
+                                    "}"
+                                ]
+                            }
+                        }
+                    ]
                 },
                 {
                     "name": "2. Categories",
@@ -2405,8 +2723,23 @@
                                 }
                             ]
                         },
-                        "description": "## GET /public/categories\n\n**Auth:** لا\n\n**Query:**\n| Param | الوصف |\n|-------|--------|\n| product_type_id | نوع المنتج (مطلوب للفلترة) |\n| parent_category_id | 0 = أقسام جذر فقط |\n| number_of_stages | لأقسام المراحل (1–8) |\n\n**استخدمها:** اختر `category_id` لعرض منتجات المتجر"
-                    }
+                        "description": "## GET /public/categories\n\n**Auth:** لا — للمستخدم / المتجر\n\n**Query:**\n| Param | الوصف |\n|-------|--------|\n| product_type_id | أقسام نوع معيّن (device / accessories / stages) |\n| parent_category_id | `0` = أقسام جذر — أو id قسم أب (مثل stages → stage one…) |\n| number_of_stages | 1–8 لأقسام المراحل الفرعية |\n\n**UI:** بعد اختيار النوع → اعرض الأقسام → عند الاختيار استخدم `category_id` في products"
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "if (pm.response.code >= 200 && pm.response.code < 300) {",
+                                    "  var res = pm.response.json();",
+                                    "  var item = (res.data || []).find(function(x) { return x.name === 'RO devices'; }); if (!item && res.data && res.data[0]) item = res.data[0];",
+                                    "  if (item && item.id) pm.collectionVariables.set(\"category_id\", String(item.id));",
+                                    "}"
+                                ]
+                            }
+                        }
+                    ]
                 },
                 {
                     "name": "3. Governorates",
@@ -2540,18 +2873,33 @@
                                     "disabled": false
                                 },
                                 {
-                                    "key": "category_id",
-                                    "value": "{{category_id}}",
+                                    "key": "product_type",
+                                    "value": "device",
                                     "disabled": true
                                 },
                                 {
                                     "key": "product_type_id",
                                     "value": "{{product_type_id}}",
                                     "disabled": true
+                                },
+                                {
+                                    "key": "category_id",
+                                    "value": "{{category_id}}",
+                                    "disabled": true
+                                },
+                                {
+                                    "key": "parent_category_id",
+                                    "value": "{{category_id}}",
+                                    "disabled": true
+                                },
+                                {
+                                    "key": "number_of_stages",
+                                    "value": "3",
+                                    "disabled": true
                                 }
                             ]
                         },
-                        "description": "## GET /public/companies/{company}/products\n\n**Auth:** لا\n\n**Query:** page, category_id, product_type_id, number_of_stages\n\n**Response:** منتجات + category + installment_plans"
+                        "description": "## GET /public/companies/{company}/products\n\n**Auth:** لا — متجر الشركة للمستخدم\n\n**Query (فلترة — اختياري):**\n| Param | مثال | الوصف |\n|-------|------|--------|\n| product_type | device | فلترة بالنوع (slug) |\n| product_type_id | 1 | فلترة بالنوع (id) |\n| category_id | 5 | قسم محدّد (RO devices, اصلاح…) |\n| parent_category_id | 12 | القسم + أقسامه الفرعية (مثل stages + stage one…) |\n| number_of_stages | 3 | منتجات مرحلة 3 |\n| page | 1 | ترقيم |\n\n**Flow UI:**\n1. GET product-types → اختيار نوع\n2. GET categories?product_type_id= → اختيار قسم\n3. GET products?category_id= **أو** ?product_type= **أو** ?parent_category_id=\n\n**Response:** منتجات الشركة + الكatalog مع `category` و `installment_plans`"
                     }
                 },
                 {
@@ -2590,7 +2938,7 @@
             "item": [
                 {
                     "name": "Public (8)",
-                    "description": "بدون auth",
+                    "description": "متجر المستخدم — فلترة بـ product_type / category_id / parent_category_id / number_of_stages",
                     "item": [
                         {
                             "name": "GET Governorates",
@@ -2637,8 +2985,23 @@
                                     ],
                                     "query": null
                                 },
-                                "description": "## GET /public/product-types\n\n**Auth:** لا\n\n**Response:** قائمة الأنواع (device | accessories | stages)\n\n**استخدمها:** اختر `product_type_id` ثم اطلب الأقسام المناسبة"
-                            }
+                                "description": "## GET /public/product-types\n\n**Auth:** لا — للمستخدم / المتجر\n\n**Response:** الأنواع الثلاثة\n```json\n{ \"data\": [{ \"id\": 1, \"name\": \"device\", \"name_ar\": \"فلتر مياه\" }] }\n```\n\n**UI:** تبويبات الفلترة الأولى → خزّن `product_type_id` أو استخدم `product_type` slug في products"
+                            },
+                            "event": [
+                                {
+                                    "listen": "test",
+                                    "script": {
+                                        "type": "text/javascript",
+                                        "exec": [
+                                            "if (pm.response.code >= 200 && pm.response.code < 300) {",
+                                            "  var res = pm.response.json();",
+                                            "  var item = (res.data || []).find(function(x) { return x.name === 'device'; }); if (!item && res.data && res.data[0]) item = res.data[0];",
+                                            "  if (item && item.id) pm.collectionVariables.set(\"product_type_id\", String(item.id));",
+                                            "}"
+                                        ]
+                                    }
+                                }
+                            ]
                         },
                         {
                             "name": "GET Categories",
@@ -2672,8 +3035,23 @@
                                         }
                                     ]
                                 },
-                                "description": "## GET /public/categories\n\n**Auth:** لا\n\n**Query:**\n| Param | الوصف |\n|-------|--------|\n| product_type_id | نوع المنتج (مطلوب للفلترة) |\n| parent_category_id | 0 = أقسام جذر فقط |\n| number_of_stages | لأقسام المراحل (1–8) |\n\n**استخدمها:** اختر `category_id` لعرض منتجات المتجر"
-                            }
+                                "description": "## GET /public/categories\n\n**Auth:** لا — للمستخدم / المتجر\n\n**Query:**\n| Param | الوصف |\n|-------|--------|\n| product_type_id | أقسام نوع معيّن (device / accessories / stages) |\n| parent_category_id | `0` = أقسام جذر — أو id قسم أب (مثل stages → stage one…) |\n| number_of_stages | 1–8 لأقسام المراحل الفرعية |\n\n**UI:** بعد اختيار النوع → اعرض الأقسام → عند الاختيار استخدم `category_id` في products"
+                            },
+                            "event": [
+                                {
+                                    "listen": "test",
+                                    "script": {
+                                        "type": "text/javascript",
+                                        "exec": [
+                                            "if (pm.response.code >= 200 && pm.response.code < 300) {",
+                                            "  var res = pm.response.json();",
+                                            "  var item = (res.data || []).find(function(x) { return x.name === 'RO devices'; }); if (!item && res.data && res.data[0]) item = res.data[0];",
+                                            "  if (item && item.id) pm.collectionVariables.set(\"category_id\", String(item.id));",
+                                            "}"
+                                        ]
+                                    }
+                                }
+                            ]
                         },
                         {
                             "name": "GET Maintenance Lookups",
@@ -2783,18 +3161,33 @@
                                             "disabled": false
                                         },
                                         {
-                                            "key": "category_id",
-                                            "value": "{{category_id}}",
+                                            "key": "product_type",
+                                            "value": "device",
                                             "disabled": true
                                         },
                                         {
                                             "key": "product_type_id",
                                             "value": "{{product_type_id}}",
                                             "disabled": true
+                                        },
+                                        {
+                                            "key": "category_id",
+                                            "value": "{{category_id}}",
+                                            "disabled": true
+                                        },
+                                        {
+                                            "key": "parent_category_id",
+                                            "value": "{{category_id}}",
+                                            "disabled": true
+                                        },
+                                        {
+                                            "key": "number_of_stages",
+                                            "value": "3",
+                                            "disabled": true
                                         }
                                     ]
                                 },
-                                "description": "## GET /public/companies/{company}/products\n\n**Auth:** لا\n\n**Query:** page, category_id, product_type_id, number_of_stages\n\n**Response:** منتجات + category + installment_plans"
+                                "description": "## GET /public/companies/{company}/products\n\n**Auth:** لا — متجر الشركة للمستخدم\n\n**Query (فلترة — اختياري):**\n| Param | مثال | الوصف |\n|-------|------|--------|\n| product_type | device | فلترة بالنوع (slug) |\n| product_type_id | 1 | فلترة بالنوع (id) |\n| category_id | 5 | قسم محدّد (RO devices, اصلاح…) |\n| parent_category_id | 12 | القسم + أقسامه الفرعية (مثل stages + stage one…) |\n| number_of_stages | 3 | منتجات مرحلة 3 |\n| page | 1 | ترقيم |\n\n**Flow UI:**\n1. GET product-types → اختيار نوع\n2. GET categories?product_type_id= → اختيار قسم\n3. GET products?category_id= **أو** ?product_type= **أو** ?parent_category_id=\n\n**Response:** منتجات الشركة + الكatalog مع `category` و `installment_plans`"
                             }
                         },
                         {

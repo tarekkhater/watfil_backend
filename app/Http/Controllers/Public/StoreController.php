@@ -124,16 +124,42 @@ class StoreController extends Controller
             $query->where("{$prefix}category_id", (int) $request->input('category_id'));
         }
 
-        if ($request->filled('product_type_id')) {
+        if ($request->filled('parent_category_id')) {
+            $parentId = (int) $request->input('parent_category_id');
+
+            $query->where(function ($categoryFilter) use ($prefix, $parentId) {
+                $categoryFilter
+                    ->where("{$prefix}category_id", $parentId)
+                    ->orWhereHas(
+                        'category',
+                        fn ($categoryQuery) => $categoryQuery->where('parent_category_id', $parentId)
+                    );
+            });
+        }
+
+        if ($request->filled('product_type')) {
+            $slug = $request->string('product_type')->toString();
+
+            $query->whereHas(
+                'category.productType',
+                fn ($typeQuery) => $typeQuery->where('name', $slug)
+            );
+        } elseif ($request->filled('product_type_id')) {
             $typeId = (int) $request->input('product_type_id');
 
-            $query->whereHas('category', fn ($categoryQuery) => $categoryQuery->where('product_type_id', $typeId));
+            $query->whereHas(
+                'category',
+                fn ($categoryQuery) => $categoryQuery->where('product_type_id', $typeId)
+            );
         }
 
         if ($request->filled('number_of_stages')) {
             $stages = (int) $request->input('number_of_stages');
 
-            $query->whereHas('category', fn ($categoryQuery) => $categoryQuery->where('number_of_stages', $stages));
+            $query->whereHas(
+                'category',
+                fn ($categoryQuery) => $categoryQuery->where('number_of_stages', $stages)
+            );
         }
     }
 

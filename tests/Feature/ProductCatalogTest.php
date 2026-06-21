@@ -97,6 +97,45 @@ class ProductCatalogTest extends TestCase
         $this->getJson("/api/public/companies/{$company->id}/products?product_type_id={$deviceTypeId}")
             ->assertOk()
             ->assertJsonPath('meta.total', 1);
+
+        $this->getJson("/api/public/companies/{$company->id}/products?product_type=device")
+            ->assertOk()
+            ->assertJsonPath('meta.total', 1)
+            ->assertJsonPath('data.0.category.name', 'RO devices');
+    }
+
+    public function test_store_products_can_be_filtered_by_parent_category_and_stages(): void
+    {
+        [$company] = $this->createStoreFixture();
+
+        $stagesRoot = Category::where('name', 'stages')->whereNull('parent_category_id')->firstOrFail();
+        $stageThree = Category::where('name', 'stage three')->firstOrFail();
+
+        $stageProduct = CompanyProduct::create([
+            'company_id'  => $company->id,
+            'name'        => 'مرحلة 3',
+            'cash_price'  => 120,
+            'category_id' => $stageThree->id,
+            'is_active'   => true,
+        ]);
+
+        CompanyProduct::create([
+            'company_id'  => $company->id,
+            'name'        => 'جهاز بدون مرحلة',
+            'cash_price'  => 4500,
+            'category_id' => Category::where('name', 'RO devices')->value('id'),
+            'is_active'   => true,
+        ]);
+
+        $this->getJson("/api/public/companies/{$company->id}/products?parent_category_id={$stagesRoot->id}")
+            ->assertOk()
+            ->assertJsonPath('meta.total', 1)
+            ->assertJsonPath('data.0.id', $stageProduct->id);
+
+        $this->getJson("/api/public/companies/{$company->id}/products?number_of_stages=3")
+            ->assertOk()
+            ->assertJsonPath('meta.total', 1)
+            ->assertJsonPath('data.0.id', $stageProduct->id);
     }
 
     public function test_company_product_can_be_created_with_category(): void
