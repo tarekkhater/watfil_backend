@@ -14,6 +14,7 @@ class Order extends Model
         'customer_id',
         'status',
         'payment_type',
+        'installment_plan_id',
         'subtotal',
         'discount',
         'total_amount',
@@ -61,5 +62,15 @@ class Order extends Model
     public function source(): HasOne
     {
         return $this->hasOne(OrderSource::class);
+    }
+
+    public function installmentPlan(): BelongsTo
+    {
+        return $this->belongsTo(CompanyProductInstallmentPlan::class, 'installment_plan_id');
+    }
+
+    public function installmentContract(): HasOne
+    {
+        return $this->hasOne(InstallmentContract::class);
     }
 }
