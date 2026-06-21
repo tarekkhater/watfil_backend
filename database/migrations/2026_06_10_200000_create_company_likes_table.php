@@ -8,14 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('company_likes', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('customer_id')->constrained('customers')->onDelete('cascade');
-            $table->foreignId('company_id')->constrained('companies')->onDelete('cascade');
-            $table->timestamps();
-
-            $table->unique(['customer_id', 'company_id']);
-        });
+        // Superseded by 2026_06_16_100100_create_company_likes_table (requires customers from 2026_06_16_100000).
     }
 
     public function down(): void
