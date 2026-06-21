@@ -12,6 +12,8 @@ class DatabaseSeeder extends Seeder
             GovernorateSeeder::class,
             SuperAdminSeeder::class,
             CommissionRuleSeeder::class,
+            ProductTypeSeeder::class,
+            CategorySeeder::class,
         ]);
     }
 }

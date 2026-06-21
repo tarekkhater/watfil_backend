@@ -1,0 +1,20 @@
+-- watfil.product_type definition
+
+CREATE TABLE `product_type` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `name` varchar(45) CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci DEFAULT NULL,
+  `name_ar` varchar(45) CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+----------------
+
+
+INSERT INTO product_type
+(name, name_ar)
+VALUES('device', 'فلتر مياه');
+INSERT INTO product_type
+(name, name_ar)
+VALUES('accessories', 'قطع غيار');
+INSERT INTO product_type
+(name, name_ar)
+VALUES('stages', 'مراحل');

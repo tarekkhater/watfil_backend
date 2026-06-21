@@ -15,10 +15,28 @@ class MaintenanceRequest extends Model
     protected $fillable = [
         'customer_id',
         'company_id',
+        'full_name',
+        'phone',
+        'governorate_id',
+        'city',
+        'area',
+        'address_details',
+        'device_details',
+        'purification_system',
+        'stages_count',
+        'last_stage_change_dates',
+        'primary_problem_type',
+        'malfunction_type',
+        'notes',
         'description',
         'address',
         'image',
         'status',
+    ];
+
+    protected $casts = [
+        'stages_count'            => 'integer',
+        'last_stage_change_dates' => 'array',
     ];
 
     public function customer(): BelongsTo
@@ -29,5 +47,10 @@ class MaintenanceRequest extends Model
     public function company(): BelongsTo
     {
         return $this->belongsTo(Company::class);
+    }
+
+    public function governorate(): BelongsTo
+    {
+        return $this->belongsTo(Governorate::class);
     }
 }

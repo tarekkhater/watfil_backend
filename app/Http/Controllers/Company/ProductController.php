@@ -16,7 +16,7 @@ class ProductController extends Controller
     public function index(): JsonResponse
     {
         $company  = auth()->user();
-        $products = $company->products()->with('installmentPlans')->latest()->paginate(15);
+        $products = $company->products()->with(['installmentPlans', 'category.productType'])->latest()->paginate(15);
 
         return response()->json([
             'data' => CompanyProductResource::collection($products->items()),
@@ -52,7 +52,7 @@ class ProductController extends Controller
 
         return response()->json([
             'message' => 'تم إضافة المنتج بنجاح',
-            'data'    => new CompanyProductResource($product->load('installmentPlans')),
+            'data'    => new CompanyProductResource($product->load(['installmentPlans', 'category.productType'])),
         ], 201);
     }
 
@@ -61,7 +61,7 @@ class ProductController extends Controller
         $this->authorizeProduct($companyProduct);
 
         return response()->json([
-            'data' => new CompanyProductResource($companyProduct->load('installmentPlans')),
+            'data' => new CompanyProductResource($companyProduct->load(['installmentPlans', 'category.productType'])),
         ]);
     }
 
@@ -95,7 +95,7 @@ class ProductController extends Controller
 
         return response()->json([
             'message' => 'تم تحديث المنتج بنجاح',
-            'data'    => new CompanyProductResource($companyProduct->fresh()->load('installmentPlans')),
+            'data'    => new CompanyProductResource($companyProduct->fresh()->load(['installmentPlans', 'category.productType'])),
         ]);
     }
 

@@ -16,7 +16,9 @@ class PublicStoreProductResource extends JsonResource
             'description'       => $this->resource['description'],
             'image'             => $this->resource['image'],
             'cash_price'        => $this->resource['cash_price'],
+            'has_installment'   => (bool) ($this->resource['has_installment'] ?? false),
             'installment_plans' => $this->resource['installment_plans'] ?? [],
+            'category'          => $this->resource['category'] ?? null,
             'supplier'          => $this->resource['supplier'] ?? null,
             'created_at'        => $this->resource['created_at'],
         ];

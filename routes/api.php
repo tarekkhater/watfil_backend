@@ -12,14 +12,16 @@ use App\Http\Controllers\Customer\MaintenanceRequestController as CustomerMainte
 use App\Http\Controllers\Customer\OrderController as CustomerOrderController;
 use App\Http\Controllers\Public\CompanyController as PublicCompanyController;
 use App\Http\Controllers\Public\GovernorateController as PublicGovernorateController;
+use App\Http\Controllers\Public\MaintenanceLookupController as PublicMaintenanceLookupController;
+use App\Http\Controllers\Public\ProductCatalogController as PublicProductCatalogController;
 use App\Http\Controllers\Public\StoreController as PublicStoreController;
-use App\Http\Controllers\Customer\AuthController as CustomerAuthController;
-use App\Http\Controllers\Customer\OrderController as CustomerOrderController;
 use App\Http\Controllers\SuperAdmin\AuthController as SuperAdminAuthController;
+use App\Http\Controllers\SuperAdmin\CategoryController as SuperAdminCategoryController;
 use App\Http\Controllers\SuperAdmin\CompanyController;
 use App\Http\Controllers\SuperAdmin\FinanceController as SuperAdminFinanceController;
 use App\Http\Controllers\SuperAdmin\GovernorateController;
 use App\Http\Controllers\SuperAdmin\OrderController as SuperAdminOrderController;
+use App\Http\Controllers\SuperAdmin\ProductTypeController as SuperAdminProductTypeController;
 use App\Http\Controllers\SuperAdmin\SupplierController;
 use App\Http\Controllers\SuperAdmin\SupplierProductController;
 use Illuminate\Support\Facades\Route;
@@ -31,9 +33,13 @@ use Illuminate\Support\Facades\Route;
 */
 Route::prefix('public')->group(function () {
     Route::get('governorates', [PublicGovernorateController::class, 'index']);
+    Route::get('product-types', [PublicProductCatalogController::class, 'productTypes']);
+    Route::get('categories', [PublicProductCatalogController::class, 'categories']);
+    Route::get('maintenance/lookups', [PublicMaintenanceLookupController::class, 'index']);
     Route::get('companies', [PublicCompanyController::class, 'index']);
     Route::get('companies/{company}', [PublicCompanyController::class, 'show']);
     Route::get('companies/{company}/products', [PublicStoreController::class, 'products']);
+    Route::get('companies/{company}/products/{companyProduct}/installment-plans', [PublicStoreController::class, 'installmentPlans']);
 });
 
 /*
@@ -43,6 +49,7 @@ Route::prefix('public')->group(function () {
 */
 Route::prefix('customer')->group(function () {
 
+    Route::post('register', [CustomerAuthController::class, 'register']);
     Route::post('auth/check-phone', [CustomerAuthController::class, 'checkPhone']);
     Route::post('login', [CustomerAuthController::class, 'login']);
     Route::post('register/request-otp', [CustomerAuthController::class, 'requestOtp']);
@@ -51,6 +58,7 @@ Route::prefix('customer')->group(function () {
     Route::middleware(['auth:sanctum', 'customer'])->group(function () {
         Route::post('logout', [CustomerAuthController::class, 'logout']);
         Route::get('me', [CustomerAuthController::class, 'me']);
+        Route::patch('profile', [CustomerAuthController::class, 'updateProfile']);
 
         Route::get('orders', [CustomerOrderController::class, 'index']);
         Route::post('orders', [CustomerOrderController::class, 'store']);
@@ -83,6 +91,19 @@ Route::prefix('super-admin')->group(function () {
 
         // Governorates (read-only, populated via seeder)
         Route::get('governorates', [GovernorateController::class, 'index']);
+
+        // Product types & categories
+        Route::get('product-types', [SuperAdminProductTypeController::class, 'index']);
+        Route::post('product-types', [SuperAdminProductTypeController::class, 'store']);
+        Route::get('product-types/{productType}', [SuperAdminProductTypeController::class, 'show']);
+        Route::post('product-types/{productType}', [SuperAdminProductTypeController::class, 'update']);
+        Route::delete('product-types/{productType}', [SuperAdminProductTypeController::class, 'destroy']);
+
+        Route::get('categories', [SuperAdminCategoryController::class, 'index']);
+        Route::post('categories', [SuperAdminCategoryController::class, 'store']);
+        Route::get('categories/{category}', [SuperAdminCategoryController::class, 'show']);
+        Route::post('categories/{category}', [SuperAdminCategoryController::class, 'update']);
+        Route::delete('categories/{category}', [SuperAdminCategoryController::class, 'destroy']);
 
         // Companies CRUD
         Route::get('companies', [CompanyController::class, 'index']);
@@ -165,28 +186,5 @@ Route::prefix('company')->group(function () {
         Route::post('orders', [CompanyOrderController::class, 'store']);
         Route::get('orders/{order}', [CompanyOrderController::class, 'show']);
         Route::patch('orders/{order}/status', [CompanyOrderController::class, 'updateStatus']);
-    });
-});
-
-/*
-|--------------------------------------------------------------------------
-| Customer Routes
-|--------------------------------------------------------------------------
-*/
-Route::prefix('customer')->group(function () {
-
-    Route::post('register', [CustomerAuthController::class, 'register']);
-    Route::post('login', [CustomerAuthController::class, 'login']);
-
-    Route::middleware(['auth:sanctum', 'customer'])->group(function () {
-
-        Route::post('logout', [CustomerAuthController::class, 'logout']);
-        Route::get('me', [CustomerAuthController::class, 'me']);
-        Route::patch('profile', [CustomerAuthController::class, 'updateProfile']);
-
-        // Orders
-        Route::get('orders', [CustomerOrderController::class, 'index']);
-        Route::post('orders', [CustomerOrderController::class, 'store']);
-        Route::get('orders/{order}', [CustomerOrderController::class, 'show']);
     });
 });

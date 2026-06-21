@@ -16,7 +16,7 @@ class MaintenanceRequestController extends Controller
     {
         $requests = $request->user()
             ->maintenanceRequests()
-            ->with('company.governorate')
+            ->with(['company.governorate', 'governorate'])
             ->latest()
             ->paginate(15);
 
@@ -39,6 +39,13 @@ class MaintenanceRequestController extends Controller
             return response()->json(['message' => 'هذه الشركة غير متاحة حاليًا'], 422);
         }
 
+        $data = $request->validated();
+        $stagesCount = (int) $data['stages_count'];
+
+        $stageDates = collect($data['last_stage_change_dates'] ?? [])
+            ->only(collect(range(1, $stagesCount))->map(fn (int $i) => "stage_{$i}")->all())
+            ->all();
+
         $imagePath = null;
 
         if ($request->hasFile('image')) {
@@ -46,16 +53,31 @@ class MaintenanceRequestController extends Controller
         }
 
         $maintenanceRequest = $request->user()->maintenanceRequests()->create([
-            'company_id'  => $company->id,
-            'description' => $request->description,
-            'address'     => $request->address,
-            'image'       => $imagePath,
-            'status'      => MaintenanceRequest::STATUS_PENDING,
+            'company_id'              => $company->id,
+            'full_name'               => $data['full_name'],
+            'phone'                   => $data['phone'],
+            'governorate_id'          => $data['governorate_id'],
+            'city'                    => $data['city'],
+            'area'                    => $data['area'],
+            'address_details'         => $data['address_details'] ?? null,
+            'device_details'          => $data['device_details'],
+            'purification_system'     => $data['purification_system'],
+            'stages_count'            => $stagesCount,
+            'last_stage_change_dates' => $stageDates,
+            'primary_problem_type'    => $data['primary_problem_type'],
+            'malfunction_type'        => $data['malfunction_type'],
+            'notes'                   => $data['notes'] ?? null,
+            'description'             => $data['device_details'],
+            'address'                 => $this->buildLegacyAddress($data),
+            'image'                   => $imagePath,
+            'status'                  => MaintenanceRequest::STATUS_PENDING,
         ]);
 
         return response()->json([
             'message' => 'تم إرسال طلب الصيانة بنجاح',
-            'data'    => new MaintenanceRequestResource($maintenanceRequest->load('company.governorate')),
+            'data'    => new MaintenanceRequestResource(
+                $maintenanceRequest->load(['company.governorate', 'governorate'])
+            ),
         ], 201);
     }
 
@@ -64,7 +86,9 @@ class MaintenanceRequestController extends Controller
         $this->authorizeRequest($request, $maintenanceRequest);
 
         return response()->json([
-            'data' => new MaintenanceRequestResource($maintenanceRequest->load('company.governorate')),
+            'data' => new MaintenanceRequestResource(
+                $maintenanceRequest->load(['company.governorate', 'governorate'])
+            ),
         ]);
     }
 
@@ -73,5 +97,17 @@ class MaintenanceRequestController extends Controller
         if ($maintenanceRequest->customer_id !== $request->user()->id) {
             abort(403, 'غير مصرح لك بهذا الإجراء');
         }
+    }
+
+    /** @param array<string, mixed> $data */
+    private function buildLegacyAddress(array $data): string
+    {
+        $parts = array_filter([
+            $data['city'] ?? null,
+            $data['area'] ?? null,
+            $data['address_details'] ?? null,
+        ]);
+
+        return implode(' — ', $parts);
     }
 }

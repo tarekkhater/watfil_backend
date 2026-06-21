@@ -1,0 +1,333 @@
+
+-- watfil.category definition
+
+CREATE TABLE `category` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `name` varchar(400) CHARACTER SET utf8mb3 NOT NULL,
+  `parent_category_id` int NOT NULL,
+  `product_type_id` int DEFAULT NULL,
+  `number_of_stages` int DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=113 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+------------------------
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('filteration devices', 0, 1, 0);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('stages', 0, 3, 0);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('stage one', 24, 3, 1);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('stage two', 24, 3, 2);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('stage three', 24, 3, 3);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('stage four', 2, 3, 4);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('stage five', 2, 3, 5);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('stage six', 2, 3, 6);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('stage seven', 2, 3, 7);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('Three stages device', 1, 1, 3);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('Four stages device', 1, 1, 4);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('Five stages device', 1, 1, 5);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('Six stages device', 1, 1, 6);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('Seven stages device', 1, 1, 7);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('eight stages device', 1, 1, 8);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('stage eight', 2, 3, 8);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('RO devices', 0, 1, 0);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('compact devices', 0, 1, 0);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('cartridge', 0, 3, 0);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('compact stages', 0, 3, 0);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('five stages RO device', 22, 1, 5);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('six stages RO device', 22, 1, 6);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('seven stages RO device', 22, 1, 7);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('eight stages RO device', 22, 1, 8);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('five stages  compact device', 23, 1, 5);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('six stages  compact device', 23, 1, 6);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('seven stages  compact device', 23, 1, 7);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('eight stages  compact device', 23, 1, 8);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('compact stage one', 25, 3, 1);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('compact stage two', 25, 3, 2);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('compact stage three', 25, 3, 3);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('compact stage four', 25, 3, 0);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('compact stage five', 25, 3, 0);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('compact stage six', 25, 3, 0);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('compact stage seven', 25, 3, 0);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('compact stage eigth', 25, 3, 0);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('stage nine', 2, 3, 0);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('BIO Sermek', 2, 3, 0);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('الكاليت', 2, 3, 0);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('نورميلت', 2, 3, 0);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('اصلاح', 0, 2, NULL);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('تثبيت', 0, 2, NULL);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('تحكم', 0, 2, NULL);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('تكميلي', 0, 2, NULL);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('ضغط', 0, 2, NULL);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('كهربي', 0, 2, NULL);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('وصلات', 0, 2, NULL);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('وعاء', 0, 2, NULL);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('جوان هوسنج', 46, 2, NULL);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('طقم اصلاح', 46, 2, NULL);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('هيد ماتور', 46, 2, NULL);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('رومان بلي', 46, 2, NULL);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('قنطرة', 46, 2, NULL);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('كلمب ص*ص', 47, 2, NULL);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('كلمب ص*ك', 47, 2, NULL);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('كلمب ك*ك', 47, 2, NULL);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('كلمب نص كبير', 47, 2, NULL);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('بركت حنفية', 47, 2, NULL);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('بركت ro', 47, 2, NULL);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('fil بركت', 47, 2, NULL);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('حامل خزان', 47, 2, NULL);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('محبس خزان', 48, 2, NULL);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('uv سوتش', 48, 2, NULL);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('ديفيتير بلاستك', 48, 2, NULL);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('ديفيتير معدن', 48, 2, NULL);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('حنفية ', 48, 2, NULL);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('مفتاح مراحل', 49, 2, NULL);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('مفتاح ممبرين', 49, 2, NULL);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('كسوة فلتر', 49, 2, NULL);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('عداد ممبرين', 50, 2, NULL);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('عداد جرسلين', 50, 2, NULL);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('فلو', 50, 2, NULL);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('رباعي', 50, 2, NULL);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('high ', 51, 2, NULL);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('low ', 51, 2, NULL);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('ماتور 75 جالون', 51, 2, NULL);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('ماتور 100 جالون', 51, 2, NULL);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('ادبتور 24 وات', 51, 2, NULL);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('uv ادبتور', 51, 2, NULL);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('سلونيت', 51, 2, NULL);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('كوع عدم رجوع', 52, 2, NULL);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('كوع ربع', 52, 2, NULL);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('كوع ممبرين', 52, 2, NULL);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('تي جانبي', 52, 2, NULL);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('تي سفلي', 52, 2, NULL);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('كوع ماتور', 52, 2, NULL);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('نبل', 52, 2, NULL);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('خرطوم', 52, 2, NULL);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('وصلة سريعة', 52, 2, NULL);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('وصلة نص', 52, 2, NULL);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('وصلة 3/4', 52, 2, NULL);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('تي 3 صامولة', 52, 2, NULL);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('هوسنج شفاف 10 بوصة', 53, 2, NULL);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('هوسنج ابيض 10 بوصة', 53, 2, NULL);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('هوسنج ممبرين ', 53, 2, NULL);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('uv هوسنج', 53, 2, NULL);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('uv كوارتز', 53, 2, NULL);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('خزان 5 جالون', 53, 2, NULL);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('محبس دخول', 48, 2, NULL);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('محبس ضبط املاح', 48, 2, NULL);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('الكالين', 2, 3, 0);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('قاروره', 53, 2, NULL);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('قارورة توصيل مباشر', 48, 2, NULL);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('هديه', 49, 2, NULL);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('فلتر سدمنت نهائي', 2, 3, 0);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('بوست بلس', 2, 3, 0);
+INSERT INTO category
+(name, parent_category_id, product_type_id, number_of_stages)
+VALUES('لمبة uv', 51, 2, NULL);

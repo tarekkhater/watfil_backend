@@ -17,6 +17,7 @@ class CompanyProductResource extends JsonResource
             'image'             => PublicFile::url($this->image),
             'cash_price'        => $this->cash_price,
             'is_active'         => $this->is_active,
+            'category'          => new CategoryResource($this->whenLoaded('category')),
             'installment_plans' => CompanyProductInstallmentPlanResource::collection(
                 $this->whenLoaded('installmentPlans')
             ),

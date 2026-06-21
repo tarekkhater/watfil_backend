@@ -12,6 +12,10 @@ class Customer extends Authenticatable
 {
     use HasApiTokens;
 
+    protected $attributes = [
+        'is_active' => true,
+    ];
+
     protected $fillable = [
         'phone',
         'email',
@@ -43,46 +47,6 @@ class Customer extends Authenticatable
         return $this->belongsToMany(Company::class, 'customer_company_links')
             ->withPivot(['status', 'linked_at'])
             ->withTimestamps();
-    }
-
-    public function orders(): HasMany
-    {
-        return $this->hasMany(Order::class);
-    }
-}
-<?php
-
-namespace App\Models;
-
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Foundation\Auth\User as Authenticatable;
-use Laravel\Sanctum\HasApiTokens;
-
-class Customer extends Authenticatable
-{
-    use HasApiTokens;
-
-    protected $fillable = [
-        'name',
-        'phone',
-        'password',
-        'governorate_id',
-        'phone_verified_at',
-    ];
-
-    protected $hidden = [
-        'password',
-    ];
-
-    protected $casts = [
-        'password'          => 'hashed',
-        'phone_verified_at' => 'datetime',
-    ];
-
-    public function governorate(): BelongsTo
-    {
-        return $this->belongsTo(Governorate::class);
     }
 
     public function orders(): HasMany

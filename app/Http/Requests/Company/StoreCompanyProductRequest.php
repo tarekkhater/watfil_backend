@@ -30,6 +30,7 @@ class StoreCompanyProductRequest extends FormRequest
             'description'                       => 'nullable|string',
             'image'                               => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
             'cash_price'                          => 'required|numeric|min:0',
+            'category_id'                         => 'nullable|integer|exists:categories,id',
             'is_active'                           => 'nullable|boolean',
             'installment_plans'                   => 'nullable|array',
             'installment_plans.*.months'          => "required|integer|in:{$allowedMonths}|distinct",

@@ -8,19 +8,11 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('customers', function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
-            $table->string('phone')->unique();
-            $table->string('password');
-            $table->foreignId('governorate_id')->constrained('governorates')->onDelete('restrict');
-            $table->timestamp('phone_verified_at')->nullable();
-            $table->timestamps();
-        });
+        // Superseded by 2026_06_16_100000_create_customers_tables (Plan 2 schema).
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('customers');
+        //
     }
 };

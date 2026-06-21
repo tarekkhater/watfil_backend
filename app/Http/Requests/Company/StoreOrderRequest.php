@@ -2,10 +2,13 @@
 
 namespace App\Http\Requests\Company;
 
+use App\Http\Requests\Concerns\ValidatesOrderPayment;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreOrderRequest extends FormRequest
 {
+    use ValidatesOrderPayment;
+
     public function authorize(): bool
     {
         return true;
@@ -13,9 +16,8 @@ class StoreOrderRequest extends FormRequest
 
     public function rules(): array
     {
-        return [
+        return array_merge($this->orderPaymentRules(), [
             'customer_id'                  => 'required|integer|exists:customers,id',
-            'payment_type'                 => 'required|in:cash,installment',
             'items'                        => 'required|array|min:1',
             'items.*.company_product_id'   => 'required|integer|exists:company_products,id',
             'items.*.quantity'             => 'required|integer|min:1',
@@ -28,15 +30,14 @@ class StoreOrderRequest extends FormRequest
             'source.reference_type'        => 'sometimes|nullable|string|max:255',
             'source.reference_id'          => 'sometimes|nullable|integer',
             'source.metadata'              => 'sometimes|nullable|array',
-        ];
+        ]);
     }
 
     public function messages(): array
     {
-        return [
+        return array_merge($this->orderPaymentMessages(), [
             'customer_id.required' => 'معرّف العميل مطلوب',
             'items.required'       => 'يجب إضافة منتج واحد على الأقل',
-            'payment_type.in'      => 'نوع الدفع غير صالح',
-        ];
+        ]);
     }
 }

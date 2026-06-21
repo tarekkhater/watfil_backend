@@ -14,6 +14,7 @@ class CompanyProduct extends Model
         'image',
         'cash_price',
         'company_id',
+        'category_id',
         'is_active',
     ];
 
@@ -25,6 +26,11 @@ class CompanyProduct extends Model
     public function company(): BelongsTo
     {
         return $this->belongsTo(Company::class);
+    }
+
+    public function category(): BelongsTo
+    {
+        return $this->belongsTo(Category::class);
     }
 
     public function installmentPlans(): HasMany

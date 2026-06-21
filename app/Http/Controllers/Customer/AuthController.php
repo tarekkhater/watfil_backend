@@ -3,12 +3,16 @@
 namespace App\Http\Controllers\Customer;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Customer\CheckPhoneRequest;
 use App\Http\Requests\Customer\LoginCustomerRequest;
 use App\Http\Requests\Customer\RegisterCustomerRequest;
+use App\Http\Requests\Customer\RequestOtpRequest;
 use App\Http\Requests\Customer\UpdateCustomerProfileRequest;
+use App\Http\Requests\Customer\VerifyRegistrationRequest;
 use App\Http\Resources\CustomerResource;
 use App\Models\Customer;
 use App\Services\Customer\CustomerService;
+use App\Services\OtpService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -16,6 +20,10 @@ use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
+    public function __construct(private readonly OtpService $otpService)
+    {
+    }
+
     public function register(
         RegisterCustomerRequest $request,
         CustomerService $customerService
@@ -87,27 +95,6 @@ class AuthController extends Controller
             'data'    => new CustomerResource($customer),
         ]);
     }
-}
-<?php
-
-namespace App\Http\Controllers\Customer;
-
-use App\Http\Controllers\Controller;
-use App\Http\Requests\Customer\CheckPhoneRequest;
-use App\Http\Requests\Customer\LoginRequest;
-use App\Http\Requests\Customer\RequestOtpRequest;
-use App\Http\Requests\Customer\VerifyRegistrationRequest;
-use App\Http\Resources\CustomerResource;
-use App\Models\Customer;
-use App\Services\OtpService;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\ValidationException;
-
-class AuthController extends Controller
-{
-    public function __construct(private OtpService $otpService) {}
 
     public function checkPhone(CheckPhoneRequest $request): JsonResponse
     {
@@ -115,25 +102,6 @@ class AuthController extends Controller
 
         return response()->json([
             'exists' => $exists,
-        ]);
-    }
-
-    public function login(LoginRequest $request): JsonResponse
-    {
-        $customer = Customer::where('phone', $request->phone)->first();
-
-        if (! $customer || ! Hash::check($request->password, $customer->password)) {
-            throw ValidationException::withMessages([
-                'phone' => ['البيانات المدخلة غير صحيحة.'],
-            ]);
-        }
-
-        $token = $customer->createToken('customer-token', ['role:customer'])->plainTextToken;
-
-        return response()->json([
-            'message'  => 'تم تسجيل الدخول بنجاح',
-            'token'    => $token,
-            'customer' => new CustomerResource($customer->load('governorate')),
         ]);
     }
 
@@ -161,11 +129,13 @@ class AuthController extends Controller
         }
 
         $customer = Customer::create([
-            'name'              => $request->name,
-            'phone'             => $request->phone,
-            'password'          => $request->password,
-            'governorate_id'    => $request->governorate_id,
-            'phone_verified_at' => now(),
+            'phone'    => $request->phone,
+            'password' => $request->password,
+        ]);
+
+        $customer->profile()->create([
+            'full_name'      => $request->name,
+            'governorate_id' => $request->governorate_id,
         ]);
 
         $token = $customer->createToken('customer-token', ['role:customer'])->plainTextToken;
@@ -173,21 +143,7 @@ class AuthController extends Controller
         return response()->json([
             'message'  => 'تم إنشاء الحساب بنجاح',
             'token'    => $token,
-            'customer' => new CustomerResource($customer->load('governorate')),
+            'customer' => new CustomerResource($customer->load('profile.governorate')),
         ], 201);
-    }
-
-    public function logout(Request $request): JsonResponse
-    {
-        $request->user()->currentAccessToken()->delete();
-
-        return response()->json(['message' => 'تم تسجيل الخروج بنجاح']);
-    }
-
-    public function me(Request $request): JsonResponse
-    {
-        return response()->json([
-            'data' => new CustomerResource($request->user()->load('governorate')),
-        ]);
     }
 }

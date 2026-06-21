@@ -16,7 +16,7 @@ class SupplierProductController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
-        $query = SupplierProduct::with(['supplier', 'installmentPlans']);
+        $query = SupplierProduct::with(['supplier', 'installmentPlans', 'category.productType']);
 
         if ($request->has('supplier_id')) {
             $query->where('supplier_id', $request->supplier_id);
@@ -61,14 +61,14 @@ class SupplierProductController extends Controller
 
         return response()->json([
             'message' => 'تم إنشاء المنتج بنجاح',
-            'data'    => new SupplierProductResource($product->load(['supplier', 'installmentPlans'])),
+            'data'    => new SupplierProductResource($product->load(['supplier', 'installmentPlans', 'category.productType'])),
         ], 201);
     }
 
     public function show(SupplierProduct $supplierProduct): JsonResponse
     {
         return response()->json([
-            'data' => new SupplierProductResource($supplierProduct->load(['supplier', 'installmentPlans'])),
+            'data' => new SupplierProductResource($supplierProduct->load(['supplier', 'installmentPlans', 'category.productType'])),
         ]);
     }
 
@@ -100,7 +100,7 @@ class SupplierProductController extends Controller
 
         return response()->json([
             'message' => 'تم تحديث المنتج بنجاح',
-            'data'    => new SupplierProductResource($supplierProduct->fresh()->load(['supplier', 'installmentPlans'])),
+            'data'    => new SupplierProductResource($supplierProduct->fresh()->load(['supplier', 'installmentPlans', 'category.productType'])),
         ]);
     }
 

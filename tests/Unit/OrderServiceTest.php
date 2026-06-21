@@ -172,6 +172,38 @@ class OrderServiceTest extends TestCase
         $service->transitionStatus($order, 'completed', $company);
     }
 
+    public function test_installment_order_uses_selected_plan_totals(): void
+    {
+        [$company, $customer, $product] = $this->createOrderFixture();
+
+        $product->installmentPlans()->create([
+            'months'             => 6,
+            'down_payment'       => 1000,
+            'installment_amount' => 700,
+        ]);
+
+        $service = $this->app->make(OrderService::class);
+
+        $order = $service->create([
+            'company_id'       => $company->id,
+            'customer_id'      => $customer->id,
+            'payment_type'     => 'installment',
+            'installment_plan' => [
+                'months'             => 6,
+                'down_payment'       => 1000,
+                'installment_amount' => 700,
+            ],
+            'items' => [
+                ['company_product_id' => $product->id, 'quantity' => 1],
+            ],
+        ], $customer);
+
+        $this->assertSame('installment', $order->payment_type);
+        $this->assertSame(5200.0, (float) $order->total_amount);
+        $this->assertSame(6, $order->installment_plan['months']);
+        $this->assertSame(4200.0, (float) $order->installment_plan['remaining_amount']);
+    }
+
     /**
      * @return array{0: Company, 1: Customer, 2: CompanyProduct}
      */

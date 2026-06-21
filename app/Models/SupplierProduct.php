@@ -15,6 +15,7 @@ class SupplierProduct extends Model
         'image',
         'cash_price',
         'supplier_id',
+        'category_id',
         'is_active',
     ];
 
@@ -26,6 +27,11 @@ class SupplierProduct extends Model
     public function supplier(): BelongsTo
     {
         return $this->belongsTo(Supplier::class);
+    }
+
+    public function category(): BelongsTo
+    {
+        return $this->belongsTo(Category::class);
     }
 
     public function companies(): BelongsToMany

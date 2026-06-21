@@ -191,10 +191,95 @@ class OrderLifecycleTest extends TestCase
             ->assertJsonValidationErrors(['customer_id']);
     }
 
+    public function test_customer_can_create_installment_order_with_selected_plan(): void
+    {
+        [$company, $customer, $product] = $this->createFixture(withInstallment: true);
+
+        Sanctum::actingAs($customer);
+
+        $this->postJson('/api/customer/orders', [
+            'company_id'       => $company->id,
+            'payment_type'     => 'installment',
+            'installment_plan' => [
+                'months'             => 6,
+                'down_payment'       => 1000,
+                'installment_amount' => 700,
+            ],
+            'items' => [
+                ['company_product_id' => $product->id, 'quantity' => 1],
+            ],
+        ])->assertCreated()
+            ->assertJsonPath('data.payment_type', 'installment')
+            ->assertJsonPath('data.installment_plan.months', 6)
+            ->assertJsonPath('data.installment_plan.down_payment', 1000)
+            ->assertJsonPath('data.installment_plan.remaining_amount', 4200)
+            ->assertJsonPath('data.total_amount', 5200);
+
+        $this->assertDatabaseHas('orders', [
+            'customer_id'  => $customer->id,
+            'payment_type' => 'installment',
+            'total_amount' => 5200,
+        ]);
+    }
+
+    public function test_installment_order_rejects_invalid_plan(): void
+    {
+        [$company, $customer, $product] = $this->createFixture(withInstallment: true);
+
+        Sanctum::actingAs($customer);
+
+        $this->postJson('/api/customer/orders', [
+            'company_id'       => $company->id,
+            'payment_type'     => 'installment',
+            'installment_plan' => [
+                'months'             => 12,
+                'down_payment'       => 500,
+                'installment_amount' => 400,
+            ],
+            'items' => [
+                ['company_product_id' => $product->id, 'quantity' => 1],
+            ],
+        ])->assertUnprocessable()
+            ->assertJsonValidationErrors(['installment_plan']);
+    }
+
+    public function test_installment_order_rejects_product_without_plans(): void
+    {
+        [$company, $customer, $product] = $this->createFixture();
+
+        Sanctum::actingAs($customer);
+
+        $this->postJson('/api/customer/orders', [
+            'company_id'       => $company->id,
+            'payment_type'     => 'installment',
+            'installment_plan' => [
+                'months'             => 6,
+                'down_payment'       => 1000,
+                'installment_amount' => 700,
+            ],
+            'items' => [
+                ['company_product_id' => $product->id, 'quantity' => 1],
+            ],
+        ])->assertUnprocessable()
+            ->assertJsonValidationErrors(['installment_plan']);
+    }
+
+    public function test_public_installment_plans_endpoint_returns_calculated_options(): void
+    {
+        [$company, , $product] = $this->createFixture(withInstallment: true);
+
+        $this->getJson("/api/public/companies/{$company->id}/products/{$product->id}/installment-plans")
+            ->assertOk()
+            ->assertJsonPath('data.product.has_installment', true)
+            ->assertJsonPath('data.plans.0.months', 6)
+            ->assertJsonPath('data.plans.0.remaining_amount', 4200)
+            ->assertJsonPath('data.plans.0.total_amount', 5200);
+    }
+
     /**
      * @return array{0: Company, 1: Customer, 2: CompanyProduct}
      */
-    private function createFixture(): array
+    private function createFixture(bool $withInstallment = false): array
     {
         $governorate = Governorate::create([
             'name_ar' => 'الجيزة',
@@ -225,6 +310,14 @@ class OrderLifecycleTest extends TestCase
             'cash_price' => 1000,
             'is_active'  => true,
         ]);
+
+        if ($withInstallment) {
+            $product->installmentPlans()->create([
+                'months'             => 6,
+                'down_payment'       => 1000,
+                'installment_amount' => 700,
+            ]);
+        }
 
         return [$company, $customer, $product];
     }
