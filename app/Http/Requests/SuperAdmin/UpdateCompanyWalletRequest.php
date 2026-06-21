@@ -15,6 +15,7 @@ class UpdateCompanyWalletRequest extends FormRequest
     {
         return [
             'wallet_balance' => 'required|numeric|min:0',
+            'reason'         => 'nullable|string|max:500',
         ];
     }
 

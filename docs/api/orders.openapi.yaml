@@ -1,0 +1,212 @@
+openapi: 3.0.3
+info:
+  title: Watfil API — Orders (Plan 3)
+  version: 1.0.0
+  description: Order lifecycle, status transitions, and commission on completion.
+servers:
+  - url: http://localhost:8000/api
+paths:
+  /company/orders:
+    get:
+      tags: [Company Orders]
+      security: [{ bearerAuth: [] }]
+      summary: List company orders
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [pending, processing, completed, cancelled]
+        - name: customer_id
+          in: query
+          schema:
+            type: integer
+        - name: per_page
+          in: query
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: OK
+    post:
+      tags: [Company Orders]
+      security: [{ bearerAuth: [] }]
+      summary: Create order for a linked customer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CompanyStoreOrderRequest'
+      responses:
+        '201':
+          description: Created
+  /company/orders/{orderId}:
+    get:
+      tags: [Company Orders]
+      security: [{ bearerAuth: [] }]
+      summary: Show order details
+      parameters:
+        - $ref: '#/components/parameters/orderId'
+      responses:
+        '200':
+          description: OK
+  /company/orders/{orderId}/status:
+    patch:
+      tags: [Company Orders]
+      security: [{ bearerAuth: [] }]
+      summary: Update order status
+      parameters:
+        - $ref: '#/components/parameters/orderId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateOrderStatusRequest'
+      responses:
+        '200':
+          description: OK
+  /customer/orders:
+    get:
+      tags: [Customer Orders]
+      security: [{ bearerAuth: [] }]
+      summary: List customer orders
+      responses:
+        '200':
+          description: OK
+    post:
+      tags: [Customer Orders]
+      security: [{ bearerAuth: [] }]
+      summary: Create order at a company
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CustomerStoreOrderRequest'
+      responses:
+        '201':
+          description: Created
+  /customer/orders/{orderId}:
+    get:
+      tags: [Customer Orders]
+      security: [{ bearerAuth: [] }]
+      summary: Show customer order
+      parameters:
+        - $ref: '#/components/parameters/orderId'
+      responses:
+        '200':
+          description: OK
+  /super-admin/orders:
+    get:
+      tags: [Super Admin Orders]
+      security: [{ bearerAuth: [] }]
+      summary: Monitor all orders
+      responses:
+        '200':
+          description: OK
+  /super-admin/orders/{orderId}:
+    get:
+      tags: [Super Admin Orders]
+      security: [{ bearerAuth: [] }]
+      summary: Show any order
+      parameters:
+        - $ref: '#/components/parameters/orderId'
+      responses:
+        '200':
+          description: OK
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+  parameters:
+    orderId:
+      name: orderId
+      in: path
+      required: true
+      schema:
+        type: integer
+  schemas:
+    OrderItemInput:
+      type: object
+      required: [company_product_id, quantity]
+      properties:
+        company_product_id:
+          type: integer
+        quantity:
+          type: integer
+          minimum: 1
+    OrderSourceInput:
+      type: object
+      properties:
+        channel:
+          type: string
+          enum: [ad, referral, link, direct]
+        reference_type:
+          type: string
+          nullable: true
+        reference_id:
+          type: integer
+          nullable: true
+        metadata:
+          type: object
+          nullable: true
+    CompanyStoreOrderRequest:
+      type: object
+      required: [customer_id, payment_type, items]
+      properties:
+        customer_id:
+          type: integer
+        payment_type:
+          type: string
+          enum: [cash, installment]
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderItemInput'
+        discount:
+          type: number
+        notes:
+          type: string
+        governorate_id:
+          type: integer
+        idempotency_key:
+          type: string
+        source:
+          $ref: '#/components/schemas/OrderSourceInput'
+    CustomerStoreOrderRequest:
+      type: object
+      required: [company_id, payment_type, items]
+      properties:
+        company_id:
+          type: integer
+        payment_type:
+          type: string
+          enum: [cash, installment]
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderItemInput'
+        discount:
+          type: number
+        notes:
+          type: string
+        governorate_id:
+          type: integer
+        idempotency_key:
+          type: string
+        source:
+          $ref: '#/components/schemas/OrderSourceInput'
+    UpdateOrderStatusRequest:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          enum: [processing, completed, cancelled]
+        note:
+          type: string
+        cancellation_reason:
+          type: string

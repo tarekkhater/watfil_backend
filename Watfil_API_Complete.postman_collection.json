@@ -1,0 +1,3784 @@
+{
+  "info": {
+    "name": "Watfil API — Complete",
+    "_postman_id": "watfil-api-complete-2026",
+    "description": "# Watfil Backend — مجموعة Postman الكاملة\n\n## الإعداد\n1. `php artisan migrate --seed`\n2. استورد الملف في Postman\n3. شغّل مجلد **00 Setup Flow** بالترتيب\n\n## حسابات افتراضية\n- Super Admin: `admin@watafl.com` / `Admin@1234`\n- Company: أنشئها من Setup أو استخدم `company_tax_number` / `company_password`\n- Customer: سجّل من Setup (خطوة 10) أو استخدم `customer_phone` / `customer_password`\n\n## المتغيرات\n| Variable | الوصف |\n|----------|-------|\n| base_url | http://localhost:8000/api |\n| super_admin_token | token الأدمن |\n| company_token | token الشركة |\n| company_id | ID الشركة |\n| customer_token | token العميل |\n| customer_id | ID العميل |\n| customer_phone | رقم موبايل العميل |\n| customer_password | كلمة مرور العميل |\n| product_id | ID منتج الشركة |\n| order_id | ID آخر طلب |\n| withdrawal_request_id | ID طلب السحب |",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000/api",
+      "type": "string"
+    },
+    {
+      "key": "super_admin_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "company_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "company_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "governorate_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "supplier_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "supplier_product_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "product_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "withdrawal_request_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "company_tax_number",
+      "value": "TAX-TEST-001",
+      "type": "string"
+    },
+    {
+      "key": "company_password",
+      "value": "Company@1234",
+      "type": "string"
+    },
+    {
+      "key": "customer_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "customer_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "customer_phone",
+      "value": "01012345678",
+      "type": "string"
+    },
+    {
+      "key": "customer_password",
+      "value": "Customer@1234",
+      "type": "string"
+    },
+    {
+      "key": "order_id",
+      "value": "1",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "00 — Setup Flow",
+      "description": "شغّل الطلبات بالترتيب لإعداد بيئة اختبار كاملة",
+      "item": [
+        {
+          "name": "1. Super Admin Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/super-admin/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "super-admin",
+                "login"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@watafl.com\",\n  \"password\": \"Admin@1234\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "var res = pm.response.json();",
+                  "if (res.token) pm.collectionVariables.set(\"super_admin_token\", res.token);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2. Get Governorates",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{super_admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/super-admin/governorates",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "super-admin",
+                "governorates"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var res = pm.response.json();",
+                  "if (res.data && res.data.length) pm.collectionVariables.set(\"governorate_id\", String(res.data[0].id));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "3. Create Company",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{super_admin_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/super-admin/companies",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "super-admin",
+                "companies"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"شركة اختبار واتفيل\",\n  \"tax_number\": \"{{company_tax_number}}\",\n  \"password\": \"{{company_password}}\",\n  \"governorate_id\": 1,\n  \"is_active\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  var res = pm.response.json();",
+                  "  if (res.data && res.data.id) pm.collectionVariables.set(\"company_id\", String(res.data.id));",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4. Credit Wallet 1000",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{super_admin_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/super-admin/companies/{{company_id}}/wallet/adjust",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "super-admin",
+                "companies",
+                "{{company_id}}",
+                "wallet",
+                "adjust"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 1000,\n  \"type\": \"credit\",\n  \"reason\": \"شحن أولي\",\n  \"idempotency_key\": \"setup-credit-001\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "5. Create Supplier",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{super_admin_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/super-admin/suppliers",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "super-admin",
+                "suppliers"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"مورد اختبار\",\n  \"description\": \"مورد للتجربة\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  var res = pm.response.json();",
+                  "  if (res.data && res.data.id) pm.collectionVariables.set(\"supplier_id\", String(res.data.id));",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "6. Create Supplier Product",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{super_admin_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/super-admin/supplier-products",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "super-admin",
+                "supplier-products"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"فلتر مياه 7 مراحل\",\n  \"cash_price\": 5000,\n  \"supplier_id\": 1,\n  \"is_active\": true,\n  \"installment_plans\": [\n    {\n      \"months\": 6,\n      \"down_payment\": 500,\n      \"installment_amount\": 800\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  var res = pm.response.json();",
+                  "  if (res.data && res.data.id) pm.collectionVariables.set(\"supplier_product_id\", String(res.data.id));",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "7. Company Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/company/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "company",
+                "login"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tax_number\": \"{{company_tax_number}}\",\n  \"password\": \"{{company_password}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "var res = pm.response.json();",
+                  "if (res.token) pm.collectionVariables.set(\"company_token\", res.token);",
+                  "if (res.company && res.company.id) pm.collectionVariables.set(\"company_id\", String(res.company.id));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "8. Add to Catalog",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{company_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/company/catalog/add",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "company",
+                "catalog",
+                "add"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"product_ids\": [\n    1\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "9. Create Company Product",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{company_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/company/products",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "company",
+                "products"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"منتج الشركة\",\n  \"cash_price\": 3000,\n  \"is_active\": true,\n  \"installment_plans\": [\n    {\n      \"months\": 3,\n      \"down_payment\": 500,\n      \"installment_amount\": 900\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  var res = pm.response.json();",
+                  "  if (res.data && res.data.id) pm.collectionVariables.set(\"product_id\", String(res.data.id));",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "10. Register Customer",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/customer/register",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "customer",
+                "register"
+              ]
+            },
+            "description": "تسجيل عميل وربطه بالشركة المنشأة في الخطوة 3",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"{{customer_phone}}\",\n  \"email\": \"customer@example.com\",\n  \"password\": \"{{customer_password}}\",\n  \"password_confirmation\": \"{{customer_password}}\",\n  \"full_name\": \"أحمد محمد\",\n  \"governorate_id\": {{governorate_id}},\n  \"city\": \"القاهرة\",\n  \"company_id\": {{company_id}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201\", () => pm.response.to.have.status(201));",
+                  "var res = pm.response.json();",
+                  "if (res.token) pm.collectionVariables.set(\"customer_token\", res.token);",
+                  "if (res.customer && res.customer.id) pm.collectionVariables.set(\"customer_id\", String(res.customer.id));",
+                  "if (res.customer && res.customer.phone) pm.collectionVariables.set(\"customer_phone\", res.customer.phone);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "11. Company Create Order",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{company_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/company/orders",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "company",
+                "orders"
+              ]
+            },
+            "description": "إنشاء طلب للعميل المسجّل في الخطوة 10",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customer_id\": {{customer_id}},\n  \"payment_type\": \"cash\",\n  \"items\": [\n    { \"company_product_id\": {{product_id}}, \"quantity\": 1 }\n  ],\n  \"source\": { \"channel\": \"direct\" },\n  \"idempotency_key\": \"setup-order-001\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201\", () => pm.response.to.have.status(201));",
+                  "var res = pm.response.json();",
+                  "if (res.data && res.data.id) pm.collectionVariables.set(\"order_id\", String(res.data.id));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "01 — Withdrawal Flow",
+      "description": "دورة سحب: طلب → اعتماد → دفع",
+      "item": [
+        {
+          "name": "1. Company Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/company/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "company",
+                "login"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tax_number\": \"{{company_tax_number}}\",\n  \"password\": \"{{company_password}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "var res = pm.response.json();",
+                  "if (res.token) pm.collectionVariables.set(\"company_token\", res.token);",
+                  "if (res.company && res.company.id) pm.collectionVariables.set(\"company_id\", String(res.company.id));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2. Request Withdrawal",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{company_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/company/wallet/withdrawals",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "company",
+                "wallet",
+                "withdrawals"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 200,\n  \"idempotency_key\": \"flow-wd-001\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  var res = pm.response.json();",
+                  "  if (res.data && res.data.id) pm.collectionVariables.set(\"withdrawal_request_id\", String(res.data.id));",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "3. Admin Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/super-admin/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "super-admin",
+                "login"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@watafl.com\",\n  \"password\": \"Admin@1234\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "var res = pm.response.json();",
+                  "if (res.token) pm.collectionVariables.set(\"super_admin_token\", res.token);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4. List Pending",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{super_admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/super-admin/finance/withdrawal-requests",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "super-admin",
+                "finance",
+                "withdrawal-requests"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "pending"
+                }
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "5. Approve",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{super_admin_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/super-admin/finance/withdrawal-requests/{{withdrawal_request_id}}/approve",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "super-admin",
+                "finance",
+                "withdrawal-requests",
+                "{{withdrawal_request_id}}",
+                "approve"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"note\": \"موافق\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "6. Pay",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{super_admin_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/super-admin/finance/withdrawal-requests/{{withdrawal_request_id}}/pay",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "super-admin",
+                "finance",
+                "withdrawal-requests",
+                "{{withdrawal_request_id}}",
+                "pay"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"payout_reference\": \"BANK-FLOW-001\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "7. Wallet Transactions",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{company_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/company/wallet/transactions",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "company",
+                "wallet",
+                "transactions"
+              ],
+              "query": [
+                {
+                  "key": "category",
+                  "value": "withdrawal_hold"
+                }
+              ]
+            },
+            "description": ""
+          }
+        }
+      ]
+    },
+    {
+      "name": "02 — Customer Flow",
+      "description": "تسجيل عميل → ملف شخصي → الشركة تشوف عملاءها",
+      "item": [
+        {
+          "name": "1. Register Customer",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/customer/register",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "customer",
+                "register"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"{{customer_phone}}\",\n  \"password\": \"{{customer_password}}\",\n  \"password_confirmation\": \"{{customer_password}}\",\n  \"full_name\": \"سارة أحمد\",\n  \"governorate_id\": {{governorate_id}},\n  \"company_id\": {{company_id}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201\", () => pm.response.to.have.status(201));",
+                  "var res = pm.response.json();",
+                  "if (res.token) pm.collectionVariables.set(\"customer_token\", res.token);",
+                  "if (res.customer && res.customer.id) pm.collectionVariables.set(\"customer_id\", String(res.customer.id));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2. Customer Me",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customer_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/customer/me",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "customer",
+                "me"
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "3. Update Profile",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customer_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/customer/profile",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "customer",
+                "profile"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"full_name\": \"سارة أحمد محمود\",\n  \"city\": \"القاهرة\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "4. Company Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/company/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "company",
+                "login"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tax_number\": \"{{company_tax_number}}\",\n  \"password\": \"{{company_password}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "var res = pm.response.json();",
+                  "if (res.token) pm.collectionVariables.set(\"company_token\", res.token);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "5. Company List Customers",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{company_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/company/customers?status=active",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "company",
+                "customers"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "active"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "var res = pm.response.json();",
+                  "pm.test(\"Has linked customers\", () => pm.expect(res.meta.total).to.be.at.least(1));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "03 — Order Flow",
+      "description": "دورة طلب: إنشاء → processing → completed (مع عمولة)",
+      "item": [
+        {
+          "name": "1. Company Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/company/login",
+              "host": ["{{base_url}}"],
+              "path": ["company", "login"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tax_number\": \"{{company_tax_number}}\",\n  \"password\": \"{{company_password}}\"\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "var res = pm.response.json();",
+                  "if (res.token) pm.collectionVariables.set(\"company_token\", res.token);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2. Company Create Order",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{company_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/company/orders",
+              "host": ["{{base_url}}"],
+              "path": ["company", "orders"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customer_id\": {{customer_id}},\n  \"payment_type\": \"cash\",\n  \"items\": [\n    { \"company_product_id\": {{product_id}}, \"quantity\": 1 }\n  ],\n  \"source\": { \"channel\": \"link\" },\n  \"idempotency_key\": \"flow-order-001\"\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201\", () => pm.response.to.have.status(201));",
+                  "var res = pm.response.json();",
+                  "if (res.data && res.data.id) pm.collectionVariables.set(\"order_id\", String(res.data.id));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "3. Update Status → processing",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{company_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/company/orders/{{order_id}}/status",
+              "host": ["{{base_url}}"],
+              "path": ["company", "orders", "{{order_id}}", "status"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"processing\",\n  \"note\": \"جاري التجهيز\"\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          }
+        },
+        {
+          "name": "4. Update Status → completed",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{company_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/company/orders/{{order_id}}/status",
+              "host": ["{{base_url}}"],
+              "path": ["company", "orders", "{{order_id}}", "status"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"completed\",\n  \"note\": \"تم التسليم\"\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          }
+        },
+        {
+          "name": "5. Customer List Orders",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{customer_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/customer/orders",
+              "host": ["{{base_url}}"],
+              "path": ["customer", "orders"]
+            }
+          }
+        },
+        {
+          "name": "6. Super Admin List Orders",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{super_admin_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/super-admin/orders",
+              "host": ["{{base_url}}"],
+              "path": ["super-admin", "orders"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Super Admin",
+      "description": "كل endpoints الإدارة",
+      "item": [
+        {
+          "name": "Auth",
+          "description": "",
+          "item": [
+            {
+              "name": "Login",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/super-admin/login",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "super-admin",
+                    "login"
+                  ]
+                },
+                "description": "",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"admin@watafl.com\",\n  \"password\": \"Admin@1234\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                      "var res = pm.response.json();",
+                      "if (res.token) pm.collectionVariables.set(\"super_admin_token\", res.token);"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Me",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{super_admin_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/super-admin/me",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "super-admin",
+                    "me"
+                  ]
+                },
+                "description": ""
+              }
+            },
+            {
+              "name": "Logout",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{super_admin_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/super-admin/logout",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "super-admin",
+                    "logout"
+                  ]
+                },
+                "description": ""
+              }
+            }
+          ]
+        },
+        {
+          "name": "Governorates",
+          "description": "",
+          "item": [
+            {
+              "name": "List",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{super_admin_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/super-admin/governorates",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "super-admin",
+                    "governorates"
+                  ]
+                },
+                "description": ""
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "var res = pm.response.json();",
+                      "if (res.data && res.data.length) pm.collectionVariables.set(\"governorate_id\", String(res.data[0].id));"
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Companies",
+          "description": "",
+          "item": [
+            {
+              "name": "List",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{super_admin_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/super-admin/companies",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "super-admin",
+                    "companies"
+                  ],
+                  "query": [
+                    {
+                      "key": "page",
+                      "value": "1"
+                    }
+                  ]
+                },
+                "description": ""
+              }
+            },
+            {
+              "name": "Create",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{super_admin_token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/super-admin/companies",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "super-admin",
+                    "companies"
+                  ]
+                },
+                "description": "",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"شركة جديدة\",\n  \"tax_number\": \"TAX-NEW-999\",\n  \"password\": \"Company@1234\",\n  \"governorate_id\": 1,\n  \"is_active\": true\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "if (pm.response.code === 201) {",
+                      "  var res = pm.response.json();",
+                      "  if (res.data && res.data.id) pm.collectionVariables.set(\"company_id\", String(res.data.id));",
+                      "}"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Show",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{super_admin_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/super-admin/companies/{{company_id}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "super-admin",
+                    "companies",
+                    "{{company_id}}"
+                  ]
+                },
+                "description": ""
+              }
+            },
+            {
+              "name": "Update",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{super_admin_token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/super-admin/companies/{{company_id}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "super-admin",
+                    "companies",
+                    "{{company_id}}"
+                  ]
+                },
+                "description": "",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"شركة محدّثة\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "name": "Toggle Status",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{super_admin_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/super-admin/companies/{{company_id}}/toggle-status",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "super-admin",
+                    "companies",
+                    "{{company_id}}",
+                    "toggle-status"
+                  ]
+                },
+                "description": ""
+              }
+            },
+            {
+              "name": "Delete",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{super_admin_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/super-admin/companies/{{company_id}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "super-admin",
+                    "companies",
+                    "{{company_id}}"
+                  ]
+                },
+                "description": "احذر: يحذف الشركة فعلياً"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Company Wallet",
+          "description": "",
+          "item": [
+            {
+              "name": "Show Wallet",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{super_admin_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/super-admin/companies/{{company_id}}/wallet",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "super-admin",
+                    "companies",
+                    "{{company_id}}",
+                    "wallet"
+                  ]
+                },
+                "description": ""
+              }
+            },
+            {
+              "name": "Set Balance",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{super_admin_token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/super-admin/companies/{{company_id}}/wallet",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "super-admin",
+                    "companies",
+                    "{{company_id}}",
+                    "wallet"
+                  ]
+                },
+                "description": "",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"wallet_balance\": 1000,\n  \"reason\": \"تعيين مباشر\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "name": "Adjust Credit",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{super_admin_token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/super-admin/companies/{{company_id}}/wallet/adjust",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "super-admin",
+                    "companies",
+                    "{{company_id}}",
+                    "wallet",
+                    "adjust"
+                  ]
+                },
+                "description": "",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"amount\": 200,\n  \"type\": \"credit\",\n  \"reason\": \"إضافة\",\n  \"idempotency_key\": \"adj-credit-test\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "name": "Adjust Debit",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{super_admin_token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/super-admin/companies/{{company_id}}/wallet/adjust",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "super-admin",
+                    "companies",
+                    "{{company_id}}",
+                    "wallet",
+                    "adjust"
+                  ]
+                },
+                "description": "",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"amount\": 50,\n  \"type\": \"debit\",\n  \"reason\": \"خصم\",\n  \"idempotency_key\": \"adj-debit-test\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "name": "Transactions",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{super_admin_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/super-admin/companies/{{company_id}}/wallet/transactions",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "super-admin",
+                    "companies",
+                    "{{company_id}}",
+                    "wallet",
+                    "transactions"
+                  ],
+                  "query": [
+                    {
+                      "key": "direction",
+                      "value": "credit"
+                    },
+                    {
+                      "key": "per_page",
+                      "value": "15"
+                    }
+                  ]
+                },
+                "description": ""
+              }
+            }
+          ]
+        },
+        {
+          "name": "Finance",
+          "description": "",
+          "item": [
+            {
+              "name": "Commission Summary",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{super_admin_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/super-admin/finance/commissions/summary",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "super-admin",
+                    "finance",
+                    "commissions",
+                    "summary"
+                  ],
+                  "query": [
+                    {
+                      "key": "from",
+                      "value": "2026-01-01"
+                    },
+                    {
+                      "key": "to",
+                      "value": "2026-12-31"
+                    }
+                  ]
+                },
+                "description": ""
+              }
+            },
+            {
+              "name": "Withdrawal Requests",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{super_admin_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/super-admin/finance/withdrawal-requests",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "super-admin",
+                    "finance",
+                    "withdrawal-requests"
+                  ],
+                  "query": [
+                    {
+                      "key": "status",
+                      "value": "pending"
+                    },
+                    {
+                      "key": "company_id",
+                      "value": "{{company_id}}"
+                    }
+                  ]
+                },
+                "description": ""
+              }
+            },
+            {
+              "name": "Approve Withdrawal",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{super_admin_token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/super-admin/finance/withdrawal-requests/{{withdrawal_request_id}}/approve",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "super-admin",
+                    "finance",
+                    "withdrawal-requests",
+                    "{{withdrawal_request_id}}",
+                    "approve"
+                  ]
+                },
+                "description": "",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"note\": \"تمت المراجعة\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "name": "Reject Withdrawal",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{super_admin_token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/super-admin/finance/withdrawal-requests/{{withdrawal_request_id}}/reject",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "super-admin",
+                    "finance",
+                    "withdrawal-requests",
+                    "{{withdrawal_request_id}}",
+                    "reject"
+                  ]
+                },
+                "description": "",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"reason\": \"بيانات ناقصة\",\n  \"note\": \"تواصل مع الشركة\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "name": "Pay Withdrawal",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{super_admin_token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/super-admin/finance/withdrawal-requests/{{withdrawal_request_id}}/pay",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "super-admin",
+                    "finance",
+                    "withdrawal-requests",
+                    "{{withdrawal_request_id}}",
+                    "pay"
+                  ]
+                },
+                "description": "",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"payout_reference\": \"BANK-REF-001\",\n  \"note\": \"تم التحويل\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Suppliers",
+          "description": "",
+          "item": [
+            {
+              "name": "List",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{super_admin_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/super-admin/suppliers",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "super-admin",
+                    "suppliers"
+                  ]
+                },
+                "description": ""
+              }
+            },
+            {
+              "name": "Create",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{super_admin_token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/super-admin/suppliers",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "super-admin",
+                    "suppliers"
+                  ]
+                },
+                "description": "",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"مورد جديد\",\n  \"description\": \"وصف\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "if (pm.response.code === 201) {",
+                      "  var res = pm.response.json();",
+                      "  if (res.data && res.data.id) pm.collectionVariables.set(\"supplier_id\", String(res.data.id));",
+                      "}"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Show",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{super_admin_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/super-admin/suppliers/{{supplier_id}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "super-admin",
+                    "suppliers",
+                    "{{supplier_id}}"
+                  ]
+                },
+                "description": ""
+              }
+            },
+            {
+              "name": "Update",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{super_admin_token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/super-admin/suppliers/{{supplier_id}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "super-admin",
+                    "suppliers",
+                    "{{supplier_id}}"
+                  ]
+                },
+                "description": "",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"مورد محدّث\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "name": "Delete",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{super_admin_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/super-admin/suppliers/{{supplier_id}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "super-admin",
+                    "suppliers",
+                    "{{supplier_id}}"
+                  ]
+                },
+                "description": ""
+              }
+            }
+          ]
+        },
+        {
+          "name": "Supplier Products",
+          "description": "",
+          "item": [
+            {
+              "name": "List",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{super_admin_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/super-admin/supplier-products",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "super-admin",
+                    "supplier-products"
+                  ],
+                  "query": [
+                    {
+                      "key": "supplier_id",
+                      "value": "{{supplier_id}}"
+                    },
+                    {
+                      "key": "is_active",
+                      "value": "1"
+                    }
+                  ]
+                },
+                "description": ""
+              }
+            },
+            {
+              "name": "Create",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{super_admin_token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/super-admin/supplier-products",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "super-admin",
+                    "supplier-products"
+                  ]
+                },
+                "description": "",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"منتج مورد\",\n  \"cash_price\": 4000,\n  \"supplier_id\": 1,\n  \"is_active\": true,\n  \"installment_plans\": [\n    {\n      \"months\": 12,\n      \"down_payment\": 400,\n      \"installment_amount\": 350\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "if (pm.response.code === 201) {",
+                      "  var res = pm.response.json();",
+                      "  if (res.data && res.data.id) pm.collectionVariables.set(\"supplier_product_id\", String(res.data.id));",
+                      "}"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Show",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{super_admin_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/super-admin/supplier-products/{{supplier_product_id}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "super-admin",
+                    "supplier-products",
+                    "{{supplier_product_id}}"
+                  ]
+                },
+                "description": ""
+              }
+            },
+            {
+              "name": "Update",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{super_admin_token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/super-admin/supplier-products/{{supplier_product_id}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "super-admin",
+                    "supplier-products",
+                    "{{supplier_product_id}}"
+                  ]
+                },
+                "description": "",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"cash_price\": 4500,\n  \"installment_plans\": [\n    {\n      \"months\": 6,\n      \"down_payment\": 500,\n      \"installment_amount\": 700\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "name": "Toggle Status",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{super_admin_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/super-admin/supplier-products/{{supplier_product_id}}/toggle-status",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "super-admin",
+                    "supplier-products",
+                    "{{supplier_product_id}}",
+                    "toggle-status"
+                  ]
+                },
+                "description": ""
+              }
+            },
+            {
+              "name": "Delete",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{super_admin_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/super-admin/supplier-products/{{supplier_product_id}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "super-admin",
+                    "supplier-products",
+                    "{{supplier_product_id}}"
+                  ]
+                },
+                "description": ""
+              }
+            }
+          ]
+        },
+        {
+          "name": "Orders",
+          "description": "مراقبة الطلبات (قراءة فقط)",
+          "item": [
+            {
+              "name": "List Orders",
+              "request": {
+                "method": "GET",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{super_admin_token}}" }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/super-admin/orders?per_page=15",
+                  "host": ["{{base_url}}"],
+                  "path": ["super-admin", "orders"],
+                  "query": [
+                    { "key": "per_page", "value": "15" },
+                    { "key": "status", "value": "completed", "disabled": true },
+                    { "key": "company_id", "value": "{{company_id}}", "disabled": true },
+                    { "key": "customer_id", "value": "{{customer_id}}", "disabled": true }
+                  ]
+                },
+                "description": "قائمة كل الطلبات مع فلاتر اختيارية"
+              }
+            },
+            {
+              "name": "Show Order",
+              "request": {
+                "method": "GET",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{super_admin_token}}" }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/super-admin/orders/{{order_id}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["super-admin", "orders", "{{order_id}}"]
+                },
+                "description": "تفاصيل طلب محدد"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Company",
+      "description": "كل endpoints الشركة",
+      "item": [
+        {
+          "name": "Auth",
+          "description": "",
+          "item": [
+            {
+              "name": "Login",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/company/login",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "company",
+                    "login"
+                  ]
+                },
+                "description": "",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"tax_number\": \"{{company_tax_number}}\",\n  \"password\": \"{{company_password}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                      "var res = pm.response.json();",
+                      "if (res.token) pm.collectionVariables.set(\"company_token\", res.token);",
+                      "if (res.company && res.company.id) pm.collectionVariables.set(\"company_id\", String(res.company.id));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Me",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{company_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/company/me",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "company",
+                    "me"
+                  ]
+                },
+                "description": ""
+              }
+            },
+            {
+              "name": "Logout",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{company_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/company/logout",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "company",
+                    "logout"
+                  ]
+                },
+                "description": ""
+              }
+            }
+          ]
+        },
+        {
+          "name": "Products",
+          "description": "",
+          "item": [
+            {
+              "name": "List",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{company_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/company/products",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "company",
+                    "products"
+                  ],
+                  "query": [
+                    {
+                      "key": "page",
+                      "value": "1"
+                    }
+                  ]
+                },
+                "description": ""
+              }
+            },
+            {
+              "name": "Create (with installments)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{company_token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/company/products",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "company",
+                    "products"
+                  ]
+                },
+                "description": "",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"منتج شركة\",\n  \"cash_price\": 2500,\n  \"description\": \"وصف\",\n  \"is_active\": true,\n  \"installment_plans\": [\n    {\n      \"months\": 3,\n      \"down_payment\": 300,\n      \"installment_amount\": 800\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "if (pm.response.code === 201) {",
+                      "  var res = pm.response.json();",
+                      "  if (res.data && res.data.id) pm.collectionVariables.set(\"product_id\", String(res.data.id));",
+                      "}"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Create (cash only)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{company_token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/company/products",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "company",
+                    "products"
+                  ]
+                },
+                "description": "",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"كاش فقط\",\n  \"cash_price\": 1500\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "name": "Show",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{company_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/company/products/{{product_id}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "company",
+                    "products",
+                    "{{product_id}}"
+                  ]
+                },
+                "description": ""
+              }
+            },
+            {
+              "name": "Update",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{company_token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/company/products/{{product_id}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "company",
+                    "products",
+                    "{{product_id}}"
+                  ]
+                },
+                "description": "",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"cash_price\": 2800,\n  \"installment_plans\": [\n    {\n      \"months\": 6,\n      \"down_payment\": 400,\n      \"installment_amount\": 450\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "name": "Remove Installments",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{company_token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/company/products/{{product_id}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "company",
+                    "products",
+                    "{{product_id}}"
+                  ]
+                },
+                "description": "",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"installment_plans\": []\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "name": "Delete",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{company_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/company/products/{{product_id}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "company",
+                    "products",
+                    "{{product_id}}"
+                  ]
+                },
+                "description": ""
+              }
+            }
+          ]
+        },
+        {
+          "name": "Catalog",
+          "description": "",
+          "item": [
+            {
+              "name": "Available Products",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{company_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/company/catalog/available",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "company",
+                    "catalog",
+                    "available"
+                  ],
+                  "query": [
+                    {
+                      "key": "supplier_id",
+                      "value": "{{supplier_id}}"
+                    }
+                  ]
+                },
+                "description": ""
+              }
+            },
+            {
+              "name": "My Catalog",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{company_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/company/catalog/mine",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "company",
+                    "catalog",
+                    "mine"
+                  ]
+                },
+                "description": ""
+              }
+            },
+            {
+              "name": "Add (bulk)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{company_token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/company/catalog/add",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "company",
+                    "catalog",
+                    "add"
+                  ]
+                },
+                "description": "",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"product_ids\": [\n    1\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "name": "Add Single",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{company_token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/company/catalog/{{supplier_product_id}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "company",
+                    "catalog",
+                    "{{supplier_product_id}}"
+                  ]
+                },
+                "description": "",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"supplier_product_id\": 1\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "name": "Remove (bulk)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{company_token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/company/catalog/remove",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "company",
+                    "catalog",
+                    "remove"
+                  ]
+                },
+                "description": "",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"product_ids\": [\n    1\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "name": "Remove Single",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{company_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/company/catalog/{{supplier_product_id}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "company",
+                    "catalog",
+                    "{{supplier_product_id}}"
+                  ]
+                },
+                "description": ""
+              }
+            }
+          ]
+        },
+        {
+          "name": "Customers",
+          "description": "قائمة العملاء المرتبطين بالشركة",
+          "item": [
+            {
+              "name": "List Linked Customers",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{company_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/company/customers?per_page=15",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "company",
+                    "customers"
+                  ],
+                  "query": [
+                    {
+                      "key": "per_page",
+                      "value": "15"
+                    }
+                  ]
+                },
+                "description": "قائمة العملاء المرتبطين بالشركة عبر customer_company_links"
+              }
+            },
+            {
+              "name": "List (search & filter)",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{company_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/company/customers?status=active&search=أحمد&per_page=15",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "company",
+                    "customers"
+                  ],
+                  "query": [
+                    {
+                      "key": "status",
+                      "value": "active"
+                    },
+                    {
+                      "key": "search",
+                      "value": "أحمد"
+                    },
+                    {
+                      "key": "per_page",
+                      "value": "15"
+                    }
+                  ]
+                },
+                "description": "بحث بالاسم/الموبايل/الإيميل + فلترة حسب حالة الربط"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Orders",
+          "description": "إنشاء ومتابعة وتحديث حالة الطلبات",
+          "item": [
+            {
+              "name": "List Orders",
+              "request": {
+                "method": "GET",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{company_token}}" }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/company/orders?per_page=15",
+                  "host": ["{{base_url}}"],
+                  "path": ["company", "orders"],
+                  "query": [
+                    { "key": "per_page", "value": "15" },
+                    { "key": "status", "value": "pending", "disabled": true },
+                    { "key": "customer_id", "value": "{{customer_id}}", "disabled": true }
+                  ]
+                },
+                "description": "قائمة طلبات الشركة"
+              }
+            },
+            {
+              "name": "Create Order",
+              "request": {
+                "method": "POST",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{company_token}}" },
+                  { "key": "Content-Type", "value": "application/json" }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/company/orders",
+                  "host": ["{{base_url}}"],
+                  "path": ["company", "orders"]
+                },
+                "description": "إنشاء طلب لعميل مرتبط نشط",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"customer_id\": {{customer_id}},\n  \"payment_type\": \"cash\",\n  \"items\": [\n    { \"company_product_id\": {{product_id}}, \"quantity\": 1 }\n  ],\n  \"discount\": 0,\n  \"notes\": \"طلب من الفرع\",\n  \"source\": { \"channel\": \"direct\" },\n  \"idempotency_key\": \"company-order-001\"\n}",
+                  "options": { "raw": { "language": "json" } }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "if (pm.response.code === 201) {",
+                      "  var res = pm.response.json();",
+                      "  if (res.data && res.data.id) pm.collectionVariables.set(\"order_id\", String(res.data.id));",
+                      "}"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Show Order",
+              "request": {
+                "method": "GET",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{company_token}}" }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/company/orders/{{order_id}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["company", "orders", "{{order_id}}"]
+                },
+                "description": "تفاصيل طلب مع البنود والسجل"
+              }
+            },
+            {
+              "name": "Update Status → processing",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{company_token}}" },
+                  { "key": "Content-Type", "value": "application/json" }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/company/orders/{{order_id}}/status",
+                  "host": ["{{base_url}}"],
+                  "path": ["company", "orders", "{{order_id}}", "status"]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"status\": \"processing\",\n  \"note\": \"جاري التجهيز\"\n}",
+                  "options": { "raw": { "language": "json" } }
+                }
+              }
+            },
+            {
+              "name": "Update Status → completed",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{company_token}}" },
+                  { "key": "Content-Type", "value": "application/json" }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/company/orders/{{order_id}}/status",
+                  "host": ["{{base_url}}"],
+                  "path": ["company", "orders", "{{order_id}}", "status"]
+                },
+                "description": "يُفعّل CommissionService عند الإكمال",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"status\": \"completed\",\n  \"note\": \"تم التسليم\"\n}",
+                  "options": { "raw": { "language": "json" } }
+                }
+              }
+            },
+            {
+              "name": "Cancel Order",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{company_token}}" },
+                  { "key": "Content-Type", "value": "application/json" }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/company/orders/{{order_id}}/status",
+                  "host": ["{{base_url}}"],
+                  "path": ["company", "orders", "{{order_id}}", "status"]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"status\": \"cancelled\",\n  \"cancellation_reason\": \"طلب العميل الإلغاء\"\n}",
+                  "options": { "raw": { "language": "json" } }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Finance",
+          "description": "",
+          "item": [
+            {
+              "name": "Wallet Transactions",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{company_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/company/wallet/transactions",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "company",
+                    "wallet",
+                    "transactions"
+                  ],
+                  "query": [
+                    {
+                      "key": "direction",
+                      "value": "debit"
+                    },
+                    {
+                      "key": "from",
+                      "value": "2026-01-01"
+                    },
+                    {
+                      "key": "to",
+                      "value": "2026-12-31"
+                    },
+                    {
+                      "key": "per_page",
+                      "value": "15"
+                    }
+                  ]
+                },
+                "description": ""
+              }
+            },
+            {
+              "name": "Request Withdrawal",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{company_token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/company/wallet/withdrawals",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "company",
+                    "wallet",
+                    "withdrawals"
+                  ]
+                },
+                "description": "",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"amount\": 200,\n  \"idempotency_key\": \"wd-test-001\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "if (pm.response.code === 201) {",
+                      "  var res = pm.response.json();",
+                      "  if (res.data && res.data.id) pm.collectionVariables.set(\"withdrawal_request_id\", String(res.data.id));",
+                      "}"
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Customer",
+      "description": "كل endpoints العميل — تسجيل / دخول / ملف شخصي / طلبات",
+      "item": [
+        {
+          "name": "Auth",
+          "description": "",
+          "item": [
+            {
+              "name": "Register",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/customer/register",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "customer",
+                    "register"
+                  ]
+                },
+                "description": "تسجيل حساب عميل جديد — company_id اختياري للربط بالشركة",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"phone\": \"{{customer_phone}}\",\n  \"email\": \"customer@example.com\",\n  \"password\": \"{{customer_password}}\",\n  \"password_confirmation\": \"{{customer_password}}\",\n  \"full_name\": \"أحمد محمد\",\n  \"governorate_id\": {{governorate_id}},\n  \"city\": \"القاهرة\",\n  \"address\": \"شارع التحرير\",\n  \"company_id\": {{company_id}}\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status 201\", () => pm.response.to.have.status(201));",
+                      "var res = pm.response.json();",
+                      "if (res.token) pm.collectionVariables.set(\"customer_token\", res.token);",
+                      "if (res.customer && res.customer.id) pm.collectionVariables.set(\"customer_id\", String(res.customer.id));",
+                      "if (res.customer && res.customer.phone) pm.collectionVariables.set(\"customer_phone\", res.customer.phone);"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Login",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/customer/login",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "customer",
+                    "login"
+                  ]
+                },
+                "description": "",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"phone\": \"{{customer_phone}}\",\n  \"password\": \"{{customer_password}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                      "var res = pm.response.json();",
+                      "if (res.token) pm.collectionVariables.set(\"customer_token\", res.token);",
+                      "if (res.customer && res.customer.id) pm.collectionVariables.set(\"customer_id\", String(res.customer.id));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Me",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{customer_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/customer/me",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "customer",
+                    "me"
+                  ]
+                },
+                "description": "عرض بيانات العميل والملف الشخصي"
+              }
+            },
+            {
+              "name": "Update Profile",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{customer_token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/customer/profile",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "customer",
+                    "profile"
+                  ]
+                },
+                "description": "تحديث الملف الشخصي — كل الحقول اختيارية",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"updated@example.com\",\n  \"full_name\": \"أحمد علي\",\n  \"governorate_id\": {{governorate_id}},\n  \"city\": \"الجيزة\",\n  \"address\": \"عنوان جديد\",\n  \"date_of_birth\": \"1990-05-20\",\n  \"gender\": \"male\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "name": "Logout",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{customer_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/customer/logout",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "customer",
+                    "logout"
+                  ]
+                },
+                "description": ""
+              }
+            }
+          ]
+        },
+        {
+          "name": "Orders",
+          "description": "طلبات العميل عند الشركات المرتبطة",
+          "item": [
+            {
+              "name": "List Orders",
+              "request": {
+                "method": "GET",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{customer_token}}" }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/customer/orders?per_page=15",
+                  "host": ["{{base_url}}"],
+                  "path": ["customer", "orders"],
+                  "query": [
+                    { "key": "per_page", "value": "15" },
+                    { "key": "status", "value": "pending", "disabled": true },
+                    { "key": "company_id", "value": "{{company_id}}", "disabled": true }
+                  ]
+                },
+                "description": "قائمة طلبات العميل"
+              }
+            },
+            {
+              "name": "Create Order",
+              "request": {
+                "method": "POST",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{customer_token}}" },
+                  { "key": "Content-Type", "value": "application/json" }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/customer/orders",
+                  "host": ["{{base_url}}"],
+                  "path": ["customer", "orders"]
+                },
+                "description": "إنشاء طلب عند شركة مرتبطة",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"company_id\": {{company_id}},\n  \"payment_type\": \"cash\",\n  \"items\": [\n    { \"company_product_id\": {{product_id}}, \"quantity\": 1 }\n  ],\n  \"source\": { \"channel\": \"link\" },\n  \"idempotency_key\": \"customer-order-001\"\n}",
+                  "options": { "raw": { "language": "json" } }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "if (pm.response.code === 201) {",
+                      "  var res = pm.response.json();",
+                      "  if (res.data && res.data.id) pm.collectionVariables.set(\"order_id\", String(res.data.id));",
+                      "}"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Show Order",
+              "request": {
+                "method": "GET",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{customer_token}}" }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/customer/orders/{{order_id}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["customer", "orders", "{{order_id}}"]
+                },
+                "description": "تفاصيل طلب العميل"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
