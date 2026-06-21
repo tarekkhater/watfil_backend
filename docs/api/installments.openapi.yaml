@@ -1,0 +1,115 @@
+openapi: 3.0.3
+info:
+  title: Watfil API — Installments (Plan 4)
+  version: 1.0.0
+  description: Installment contracts, schedule, payments, and overdue processing.
+servers:
+  - url: http://localhost:8000/api
+paths:
+  /company/installment-contracts:
+    get:
+      tags: [Company Installments]
+      security: [{ bearerAuth: [] }]
+      summary: List company installment contracts
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [active, completed, defaulted, cancelled]
+        - name: customer_id
+          in: query
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: OK
+  /company/installment-contracts/{contractId}:
+    get:
+      tags: [Company Installments]
+      security: [{ bearerAuth: [] }]
+      summary: Show installment contract with schedule
+      parameters:
+        - $ref: '#/components/parameters/contractId'
+      responses:
+        '200':
+          description: OK
+  /company/installment-contracts/{contractId}/payments:
+    post:
+      tags: [Company Installments]
+      security: [{ bearerAuth: [] }]
+      summary: Record installment payment
+      parameters:
+        - $ref: '#/components/parameters/contractId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [installment_schedule_id, amount]
+              properties:
+                installment_schedule_id:
+                  type: integer
+                amount:
+                  type: number
+                payment_method:
+                  type: string
+                  enum: [cash, transfer, card, other]
+                notes:
+                  type: string
+                paid_at:
+                  type: string
+                  format: date-time
+                idempotency_key:
+                  type: string
+      responses:
+        '201':
+          description: Created
+  /customer/installment-contracts:
+    get:
+      tags: [Customer Installments]
+      security: [{ bearerAuth: [] }]
+      summary: List customer installment contracts
+      responses:
+        '200':
+          description: OK
+  /customer/installment-contracts/{contractId}:
+    get:
+      tags: [Customer Installments]
+      security: [{ bearerAuth: [] }]
+      summary: Show customer installment contract
+      parameters:
+        - $ref: '#/components/parameters/contractId'
+      responses:
+        '200':
+          description: OK
+  /super-admin/installment-contracts/overdue-summary:
+    get:
+      tags: [Super Admin Installments]
+      security: [{ bearerAuth: [] }]
+      summary: Overdue schedules and defaulted contracts summary
+      responses:
+        '200':
+          description: OK
+  /super-admin/installment-contracts:
+    get:
+      tags: [Super Admin Installments]
+      security: [{ bearerAuth: [] }]
+      summary: Monitor all installment contracts
+      responses:
+        '200':
+          description: OK
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    contractId:
+      name: contractId
+      in: path
+      required: true
+      schema:
+        type: integer

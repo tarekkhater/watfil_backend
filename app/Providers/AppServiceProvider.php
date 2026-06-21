@@ -4,10 +4,12 @@ namespace App\Providers;
 
 use App\Models\Customer;
 use App\Models\CustomerCompanyLink;
+use App\Models\InstallmentContract;
 use App\Models\Order;
 use App\Models\WithdrawalRequest;
 use App\Policies\CustomerCompanyLinkPolicy;
 use App\Policies\CustomerPolicy;
+use App\Policies\InstallmentContractPolicy;
 use App\Policies\OrderPolicy;
 use App\Policies\WithdrawalRequestPolicy;
 use Illuminate\Support\Facades\Gate;
@@ -32,5 +34,6 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(Customer::class, CustomerPolicy::class);
         Gate::policy(CustomerCompanyLink::class, CustomerCompanyLinkPolicy::class);
         Gate::policy(Order::class, OrderPolicy::class);
+        Gate::policy(InstallmentContract::class, InstallmentContractPolicy::class);
     }
 }

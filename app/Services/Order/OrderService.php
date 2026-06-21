@@ -11,6 +11,7 @@ use App\Models\OrderItem;
 use App\Models\OrderSource;
 use App\Models\OrderStatusHistory;
 use App\Services\Finance\CommissionService;
+use App\Services\Installment\InstallmentContractService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -29,7 +30,8 @@ class OrderService
     ];
 
     public function __construct(
-        private readonly CommissionService $commissionService
+        private readonly CommissionService $commissionService,
+        private readonly InstallmentContractService $installmentContractService
     ) {
     }
 
@@ -38,6 +40,7 @@ class OrderService
      *     company_id: int,
      *     customer_id: int,
      *     payment_type: string,
+     *     installment_plan_id?: int|null,
      *     items: list<array{company_product_id: int, quantity: int}>,
      *     discount?: float,
      *     notes?: string|null,
@@ -69,7 +72,12 @@ class OrderService
             $this->assertCustomerLinkedToCompany((int) $data['customer_id'], $company->id);
 
             $products = $this->resolveOrderProducts($data['items'], $company->id);
-            $lineItems = $this->buildLineItems($data['items'], $products);
+
+            if ($data['payment_type'] === 'installment') {
+                $this->assertInstallmentOrderRules($data);
+            }
+
+            $lineItems = $this->buildLineItems($data['items'], $products, $data['payment_type'] ?? 'cash', $data);
             $subtotal = round($lineItems->sum('line_total'), 2);
             $discount = round((float) ($data['discount'] ?? 0), 2);
 
@@ -83,8 +91,9 @@ class OrderService
                 'company_id'       => $company->id,
                 'customer_id'      => $data['customer_id'],
                 'status'           => 'pending',
-                'payment_type'     => $data['payment_type'],
-                'subtotal'         => $subtotal,
+                'payment_type'        => $data['payment_type'],
+                'installment_plan_id' => $data['installment_plan_id'] ?? null,
+                'subtotal'            => $subtotal,
                 'discount'         => $discount,
                 'total_amount'     => round($subtotal - $discount, 2),
                 'governorate_id'   => $data['governorate_id'] ?? null,
@@ -180,6 +189,10 @@ class OrderService
                     actor: $actor,
                     sourceChannel: $order->source?->channel
                 );
+
+                if ($order->payment_type === 'installment') {
+                    $this->installmentContractService->createFromOrder($order, $actor);
+                }
             }
 
             return $order->fresh([
@@ -189,6 +202,7 @@ class OrderService
                 'company',
                 'customer.profile',
                 'governorate',
+                'installmentContract.schedule',
             ]);
         });
     }
@@ -229,8 +243,30 @@ class OrderService
      * @param Collection<int, CompanyProduct> $products
      * @return Collection<int, array{company_product_id: int, product_name: string, quantity: int, unit_price: float, line_total: float}>
      */
-    private function buildLineItems(array $items, Collection $products): Collection
+    /**
+     * @param array<string, mixed> $data
+     */
+    private function buildLineItems(array $items, Collection $products, string $paymentType, array $data): Collection
     {
+        if ($paymentType === 'installment') {
+            $productId = (int) $items[0]['company_product_id'];
+            $plan = $this->installmentContractService->resolvePlanForOrder(
+                (int) $data['installment_plan_id'],
+                (int) $data['company_id'],
+                $productId
+            );
+            $product = $products->get($productId);
+            $lineTotal = $this->installmentContractService->calculateOrderTotal($plan);
+
+            return collect([[
+                'company_product_id' => $product->id,
+                'product_name'       => $product->name,
+                'quantity'           => 1,
+                'unit_price'         => $lineTotal,
+                'line_total'         => $lineTotal,
+            ]]);
+        }
+
         return collect($items)->map(function (array $item) use ($products) {
             $product = $products->get($item['company_product_id']);
             $quantity = (int) $item['quantity'];
@@ -245,6 +281,30 @@ class OrderService
                 'line_total'         => $lineTotal,
             ];
         });
+    }
+
+    /**
+     * @param array<string, mixed> $data
+     */
+    private function assertInstallmentOrderRules(array $data): void
+    {
+        if (blank($data['installment_plan_id'] ?? null)) {
+            throw ValidationException::withMessages([
+                'installment_plan_id' => ['خطة التقسيط مطلوبة عند اختيار الدفع بالتقسيط.'],
+            ]);
+        }
+
+        if (count($data['items']) !== 1) {
+            throw ValidationException::withMessages([
+                'items' => ['طلب التقسيط يدعم منتجاً واحداً فقط في الوقت الحالي.'],
+            ]);
+        }
+
+        if ((int) ($data['items'][0]['quantity'] ?? 0) !== 1) {
+            throw ValidationException::withMessages([
+                'items.0.quantity' => ['كمية منتج التقسيط يجب أن تكون 1.'],
+            ]);
+        }
     }
 
     private function assertCustomerLinkedToCompany(int $customerId, int $companyId): void

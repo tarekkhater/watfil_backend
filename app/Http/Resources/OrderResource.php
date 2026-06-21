@@ -33,6 +33,8 @@ class OrderResource extends JsonResource
             'items'               => OrderItemResource::collection($this->whenLoaded('items')),
             'source'              => new OrderSourceResource($this->whenLoaded('source')),
             'status_history'      => OrderStatusHistoryResource::collection($this->whenLoaded('statusHistory')),
+            'installment_plan_id' => $this->installment_plan_id,
+            'installment_contract'=> new InstallmentContractResource($this->whenLoaded('installmentContract')),
             'created_at'          => $this->created_at?->toDateTimeString(),
             'updated_at'          => $this->updated_at?->toDateTimeString(),
         ];

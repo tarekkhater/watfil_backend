@@ -16,6 +16,7 @@ class StoreOrderRequest extends FormRequest
         return [
             'company_id'                   => 'required|integer|exists:companies,id',
             'payment_type'                 => 'required|in:cash,installment',
+            'installment_plan_id'          => 'required_if:payment_type,installment|nullable|integer|exists:company_product_installment_plans,id',
             'items'                        => 'required|array|min:1',
             'items.*.company_product_id'   => 'required|integer|exists:company_products,id',
             'items.*.quantity'             => 'required|integer|min:1',
