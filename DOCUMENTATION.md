@@ -25,6 +25,7 @@
 |---|---|
 | **Super Admin** | يدير الشركات والموردين ومنتجات الموردين |
 | **Company** | تدير منتجاتها الخاصة وتختار من كتالوج الموردين |
+| **Customer** | يتصفح الشركات والمتاجر بدون تسجيل، ويطلب شراء/صيانة بعد تسجيل الدخول |
 
 ---
 
@@ -99,9 +100,18 @@ app/
 │   │       ├── AuthController.php          ← تسجيل دخول/خروج الشركة
 │   │       ├── ProductController.php       ← CRUD منتجات الشركة الخاصة
 │   │       └── CatalogController.php       ← إدارة كتالوج الموردين
+│   │   ├── Public/
+│   │   │   ├── GovernorateController.php   ← المحافظات (عام)
+│   │   │   ├── CompanyController.php     ← الشركات حسب المحافظة (عام)
+│   │   │   └── StoreController.php       ← منتجات متجر الشركة (عام)
+│   │   └── Customer/
+│   │       ├── AuthController.php          ← تسجيل/دخول المستخدم النهائي
+│   │       ├── OrderController.php         ← طلبات الشراء
+│   │       └── MaintenanceRequestController.php ← طلبات الصيانة
 │   ├── Middleware/
 │   │   ├── SuperAdminMiddleware.php        ← حماية routes السوبر أدمن
-│   │   └── CompanyMiddleware.php           ← حماية routes الشركة
+│   │   ├── CompanyMiddleware.php           ← حماية routes الشركة
+│   │   └── CustomerMiddleware.php          ← حماية routes العميل
 │   ├── Requests/
 │   │   ├── SuperAdmin/
 │   │   │   ├── StoreCompanyRequest.php
@@ -125,7 +135,10 @@ app/
 │   ├── Company.php
 │   ├── Supplier.php
 │   ├── SupplierProduct.php
-│   └── CompanyProduct.php
+│   ├── CompanyProduct.php
+│   ├── Customer.php
+│   ├── Order.php
+│   └── MaintenanceRequest.php
 database/
 ├── migrations/          ← كل جداول قاعدة البيانات
 └── seeders/
@@ -198,6 +211,55 @@ company_catalog       ← pivot table
 ├── supplier_product_id (FK → supplier_products، cascade delete)
 ├── unique(company_id, supplier_product_id)
 └── timestamps
+
+customers
+├── id
+├── name
+├── phone             (unique — يُستخدم للدخول)
+├── password          (hashed)
+├── governorate_id    (FK → governorates)
+├── phone_verified_at (nullable)
+└── timestamps
+
+orders
+├── id
+├── customer_id       (FK → customers)
+├── company_id        (FK → companies)
+├── product_type      (company_product | supplier_product)
+├── product_id
+├── quantity
+├── unit_price        (snapshot وقت الطلب)
+├── total_price
+├── delivery_address
+├── notes             (nullable)
+├── status            (pending | accepted | rejected | completed | cancelled)
+└── timestamps
+
+maintenance_requests
+├── id
+├── customer_id       (FK → customers)
+├── company_id        (FK → companies)
+├── description
+├── address           (nullable)
+├── image             (nullable)
+├── status            (pending | in_progress | completed | cancelled)
+└── timestamps
+
+company_likes
+├── id
+├── customer_id       (FK → customers)
+├── company_id        (FK → companies)
+├── unique(customer_id, company_id)
+└── timestamps
+
+company_ratings
+├── id
+├── customer_id       (FK → customers)
+├── company_id        (FK → companies)
+├── rating            (1–5)
+├── comment           (nullable)
+├── unique(customer_id, company_id)
+└── timestamps
 ```
 
 ### العلاقات
@@ -207,6 +269,15 @@ Governorate     ──< Company             (one-to-many)
 Supplier        ──< SupplierProduct     (one-to-many)
 Company         ──< CompanyProduct      (one-to-many)
 Company         >──< SupplierProduct    (many-to-many عبر company_catalog)
+Customer        ──< Order               (one-to-many)
+Customer        ──< MaintenanceRequest  (one-to-many)
+Governorate     ──< Customer            (one-to-many)
+Company         ──< Order               (one-to-many)
+Company         ──< MaintenanceRequest  (one-to-many)
+Company         ──< CompanyLike         (one-to-many)
+Company         ──< CompanyRating       (one-to-many)
+Customer        ──< CompanyLike         (one-to-many)
+Customer        ──< CompanyRating       (one-to-many)
 ```
 
 ### المحافظات المصرية (27 محافظة)
@@ -235,6 +306,7 @@ Company         >──< SupplierProduct    (many-to-many عبر company_catalog
 |---|---|---|
 | `sanctum` | `SuperAdmin` | `/api/super-admin/*` |
 | `sanctum` | `Company` | `/api/company/*` |
+| `sanctum` | `Customer` | `/api/customer/*` |
 
 ### Middleware
 
@@ -243,6 +315,25 @@ Company         >──< SupplierProduct    (many-to-many عبر company_catalog
 | `auth:sanctum` | يتحقق أن الـ Token صحيح وموجود |
 | `super_admin` | يتحقق أن المستخدم هو `SuperAdmin` model |
 | `company` | يتحقق أن المستخدم هو `Company` model وأنه مفعّل |
+| `customer` | يتحقق أن المستخدم هو `Customer` model |
+
+### Public API (بدون auth)
+
+| Prefix | الوظيفة |
+|---|---|
+| `/api/public/governorates` | قائمة المحافظات للفلتر |
+| `/api/public/companies` | شركات نشطة حسب `governorate_id` |
+| `/api/public/companies/{id}` | تفاصيل شركة |
+| `/api/public/companies/{id}/products` | منتجات المتجر (خاصة + كتالوج) |
+
+### Customer Auth
+
+| الخطوة | Endpoint |
+|---|---|
+| تحقق من الهاتف | `POST /api/customer/auth/check-phone` |
+| دخول (موجود) | `POST /api/customer/login` |
+| طلب OTP (جديد) | `POST /api/customer/register/request-otp` |
+| إنشاء حساب | `POST /api/customer/register/verify` |
 
 ### Headers المطلوبة
 

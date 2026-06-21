@@ -19,6 +19,15 @@
   - [Auth](#company--auth)
   - [Products](#company--products)
   - [Catalog](#company--catalog)
+- [Public (بدون تسجيل)](#public)
+  - [Governorates](#public--governorates)
+  - [Companies](#public--companies)
+  - [Store Products](#public--store-products)
+- [Customer (المستخدم النهائي)](#customer)
+  - [Auth](#customer--auth)
+  - [Orders](#customer--orders)
+  - [Maintenance Requests](#customer--maintenance-requests)
+  - [Company Likes & Ratings](#customer--company-likes--ratings)
 - [معالجة الأخطاء](#معالجة-الأخطاء)
 - [ملاحظات مهمة للفرونت](#ملاحظات-مهمة-للفرونت)
 
@@ -59,21 +68,25 @@ axios.interceptors.request.use((config) => {
 
 ## المصادقة
 
-النظام فيه **دورين منفصلين** — كل دور له token خاص ولا يمكن استخدام token دور في endpoints الدور الآخر.
+النظام فيه **ثلاثة أدوار** — كل دور له token خاص:
 
 | الدور | Login endpoint | Token ability |
 |-------|----------------|---------------|
 | Super Admin | `POST /super-admin/login` | `role:super-admin` |
 | Company | `POST /company/login` | `role:company` |
+| Customer | `POST /customer/login` أو `POST /customer/register/verify` | `role:customer` |
 
-**Flow للفرونت:**
+**Public endpoints** (`/public/*`) لا تحتاج token.
+
+**Flow للفرونت (Customer):**
 
 ```
-1. POST /login  →  احفظ data.token
-2. كل request محمي  →  Header: Authorization: Bearer {token}
-3. POST /logout  →  احذف الـ token من الـ storage
-4. عند 401  →  وجّه المستخدم لصفحة login
-5. عند 403  →  اعرض رسالة الخطأ (حساب موقوف / دور غلط)
+1. تصفح بدون تسجيل → /public/*
+2. عند شراء/صيانة → POST /customer/auth/check-phone
+3. إذا exists=true → POST /customer/login
+4. إذا exists=false → POST /customer/register/request-otp ثم /customer/register/verify
+5. احفظ data.token → أكمل الطلب
+6. عند 401 → وجّه لشاشة الدخول
 ```
 
 ---
@@ -1309,6 +1322,408 @@ DELETE /company/catalog/{id}
 
 ---
 
+## Public
+
+Endpoints عامة **بدون تسجيل دخول** — للمستخدم النهائي عند تصفح الشركات والمتاجر.
+
+### Public — Governorates
+
+```
+GET /public/governorates
+```
+
+| | |
+|---|---|
+| **Auth** | لا يوجد |
+
+**Response `200`:**
+
+```json
+{
+  "data": [
+    { "id": 1, "name_ar": "القاهرة", "name_en": "Cairo" }
+  ]
+}
+```
+
+**للفرونت:** استخدمه في dropdown فلتر المحافظات. القيمة = `governorate_id`.
+
+---
+
+### Public — Companies
+
+#### قائمة الشركات حسب المحافظة
+
+```
+GET /public/companies?governorate_id={id}
+```
+
+| | |
+|---|---|
+| **Auth** | لا يوجد |
+| **Query** | `governorate_id` (مطلوب)، `page` (اختياري) |
+
+**Response `200`:** شركات نشطة فقط (`is_active = true`) — بدون `tax_number`.
+
+```ts
+interface PublicCompany {
+  id: number;
+  name: string;
+  logo: string | null;
+  governorate: Governorate;
+  likes_count: number;       // إجمالي الإعجابات
+  ratings_count: number;     // عدد التقييمات
+  average_rating: number | null;  // متوسط التقييم (1-5)، null لو مفيش تقييمات
+  is_liked?: boolean;        // موجود فقط لو العميل مسجل دخول
+  my_rating?: number | null; // تقييم العميل الحالي (1-5)
+}
+```
+
+```json
+{
+  "data": [
+    {
+      "id": 1,
+      "name": "شركة المياه",
+      "logo": "http://localhost:8000/storage/logos/companies/abc.png",
+      "governorate": { "id": 1, "name_ar": "القاهرة", "name_en": "Cairo" },
+      "likes_count": 42,
+      "ratings_count": 15,
+      "average_rating": 4.3
+    }
+  ],
+  "meta": { "total": 5, "current_page": 1, "last_page": 1, "per_page": 15 }
+}
+```
+
+> **اختياري:** أرسل `Authorization: Bearer {customer_token}` مع طلبات `/public/companies` لتحصل على `is_liked` و `my_rating` لكل شركة.
+
+#### تفاصيل شركة
+
+```
+GET /public/companies/{id}
+```
+
+**Response `404`:** إذا الشركة غير نشطة.
+
+---
+
+### Public — Store Products
+
+```
+GET /public/companies/{id}/products?page=1
+```
+
+| | |
+|---|---|
+| **Auth** | لا يوجد |
+
+يعرض منتجات المتجر = **منتجات الشركة الخاصة** + **منتجات الكتالوج** (من الموردين).
+
+```ts
+interface PublicStoreProduct {
+  id: number;
+  source: 'company' | 'catalog';
+  name: string;
+  description: string | null;
+  image: string | null;
+  cash_price: string;
+  installment_plans: InstallmentPlan[];
+  supplier: Supplier | null;  // موجود فقط لو source = catalog
+  created_at: string;
+}
+
+interface InstallmentPlan {
+  months: number;
+  down_payment: string;
+  installment_amount: string;
+}
+```
+
+**للفرونت:** عند الطلب استخدم `source` كـ `product_type`:
+- `company` → `product_type: "company_product"`
+- `catalog` → `product_type: "supplier_product"`
+
+---
+
+## Customer
+
+### Customer — Auth
+
+#### 1. التحقق من رقم الهاتف
+
+```
+POST /customer/auth/check-phone
+```
+
+```json
+{ "phone": "01285254756" }
+```
+
+**Response `200`:**
+
+```json
+{ "exists": true }
+```
+
+- `exists: true` → اعرض شاشة إدخال كلمة المرور
+- `exists: false` → ابدأ تسجيل جديد (OTP)
+
+---
+
+#### 2. تسجيل الدخول (حساب موجود)
+
+```
+POST /customer/login
+```
+
+```json
+{
+  "phone": "01285254756",
+  "password": "MyPassword123"
+}
+```
+
+**Response `200`:**
+
+```json
+{
+  "message": "تم تسجيل الدخول بنجاح",
+  "token": "1|abc...",
+  "customer": {
+    "id": 1,
+    "name": "كيرلس منير",
+    "phone": "01285254756",
+    "governorate": { "id": 1, "name_ar": "القاهرة", "name_en": "Cairo" }
+  }
+}
+```
+
+---
+
+#### 3. طلب OTP (حساب جديد)
+
+```
+POST /customer/register/request-otp
+```
+
+```json
+{ "phone": "01285254756" }
+```
+
+**Response `200`:**
+
+```json
+{
+  "message": "تم إرسال رمز التحقق",
+  "debug_otp": "123456"
+}
+```
+
+> `debug_otp` يظهر فقط عند `APP_DEBUG=true` للتطوير.
+
+---
+
+#### 4. إنشاء حساب + تسجيل دخول
+
+```
+POST /customer/register/verify
+```
+
+```json
+{
+  "phone": "01285254756",
+  "otp": "123456",
+  "name": "كيرلس منير",
+  "password": "MyPassword123",
+  "password_confirmation": "MyPassword123",
+  "governorate_id": 1
+}
+```
+
+**Response `201`:** نفس شكل login — `token` + `customer`.
+
+---
+
+#### 5. بياناتي / خروج
+
+```
+GET  /customer/me      (Auth: Customer)
+POST /customer/logout  (Auth: Customer)
+```
+
+---
+
+### Customer — Orders
+
+> **يتطلب تسجيل دخول** — عند الضغط على "شراء" بدون token، وجّه المستخدم لـ auth flow أولاً.
+
+#### إنشاء طلب شراء (منتج واحد)
+
+```
+POST /customer/orders
+```
+
+```json
+{
+  "company_id": 1,
+  "product_type": "company_product",
+  "product_id": 5,
+  "quantity": 1,
+  "delivery_address": "القاهرة، مدينة نصر، شارع...",
+  "notes": "اتصل قبل التوصيل"
+}
+```
+
+| الحقل | القيم |
+|-------|-------|
+| `product_type` | `company_product` أو `supplier_product` |
+| `product_id` | ID المنتج (حسب `source` من المتجر) |
+
+**Response `201`:**
+
+```json
+{
+  "message": "تم إنشاء الطلب بنجاح",
+  "data": {
+    "id": 1,
+    "product_type": "company_product",
+    "product_id": 5,
+    "quantity": 1,
+    "unit_price": "1500.00",
+    "total_price": "1500.00",
+    "delivery_address": "...",
+    "notes": null,
+    "status": "pending",
+    "company": { "id": 1, "name": "...", "logo": "...", "governorate": {} },
+    "product": { "id": 5, "source": "company", "name": "...", "cash_price": "1500.00" },
+    "created_at": "2026-06-10 12:00:00"
+  }
+}
+```
+
+#### قائمة طلباتي / تفاصيل
+
+```
+GET /customer/orders
+GET /customer/orders/{id}
+```
+
+---
+
+### Customer — Maintenance Requests
+
+> **يتطلب تسجيل دخول**
+
+#### إنشاء طلب صيانة
+
+```
+POST /customer/maintenance-requests
+Content-Type: multipart/form-data
+```
+
+| الحقل | النوع | مطلوب |
+|-------|-------|-------|
+| `company_id` | number | ✅ |
+| `description` | string | ✅ |
+| `address` | string | اختياري |
+| `image` | file | اختياري |
+
+**Response `201`:**
+
+```json
+{
+  "message": "تم إرسال طلب الصيانة بنجاح",
+  "data": {
+    "id": 1,
+    "description": "فلتر المياه بيسرب",
+    "address": "القاهرة...",
+    "image": null,
+    "status": "pending",
+    "company": { "id": 1, "name": "..." },
+    "created_at": "2026-06-10 12:00:00"
+  }
+}
+```
+
+#### قائمة طلبات الصيانة / تفاصيل
+
+```
+GET /customer/maintenance-requests
+GET /customer/maintenance-requests/{id}
+```
+
+**حالات الطلب:** `pending` | `in_progress` | `completed` | `cancelled`
+
+---
+
+### Customer — Company Likes & Ratings
+
+> **يتطلب تسجيل دخول** — العميل يقدر يعمل like مرة واحدة ويقيّم مرة واحدة (يقدر يعدّل تقييمه).
+
+#### إعجاب بشركة
+
+```
+POST /customer/companies/{id}/like
+```
+
+**Response `201`:**
+
+```json
+{
+  "message": "تم تسجيل الإعجاب بنجاح",
+  "data": {
+    "id": 1,
+    "name": "شركة المياه",
+    "likes_count": 43,
+    "ratings_count": 15,
+    "average_rating": 4.3,
+    "is_liked": true,
+    "my_rating": 5
+  }
+}
+```
+
+**422:** إذا أعجب بالشركة من قبل.
+
+#### إلغاء الإعجاب
+
+```
+DELETE /customer/companies/{id}/like
+```
+
+**422:** إذا لم يعجب بالشركة من قبل.
+
+#### تقييم شركة
+
+```
+POST /customer/companies/{id}/rating
+```
+
+```json
+{
+  "rating": 5,
+  "comment": "خدمة ممتازة وسريعة"
+}
+```
+
+| Field | مطلوب | القيود |
+|-------|-------|--------|
+| `rating` | ✅ | 1–5 |
+| `comment` | ❌ | max 1000 حرف |
+
+**سلوك:** لو العميل قيّم من قبل → يتم **تحديث** التقييم (upsert).
+
+**Response `200`:** يرجع بيانات الشركة مع `average_rating` و `ratings_count` المحدّثين.
+
+#### حذف التقييم
+
+```
+DELETE /customer/companies/{id}/rating
+```
+
+---
+
 ## معالجة الأخطاء
 
 | Status | المعنى | إجراء الفرونت |
@@ -1389,6 +1804,7 @@ const { current_page, last_page, total } = response.data.meta;
 ```js
 localStorage.setItem('super_admin_token', token);  // لوحة الإدارة
 localStorage.setItem('company_token', token);       // تطبيق الشركة
+localStorage.setItem('customer_token', token);      // تطبيق المستخدم النهائي
 ```
 
 ### 7. رسائل النجاح
@@ -1401,7 +1817,16 @@ toast.success(response.data.message);
 
 ### 8. Postman Collection
 
-ملف `Watafl.postman_collection.json` في جذر المشروع — فيه كل الـ endpoints جاهزة للاختبار.
+ملف **`Watafl.postman_collection.json`** في جذر المشروع — مجموعة **كاملة** تشمل:
+
+| المجلد | المحتوى |
+|--------|---------|
+| **Public** | محافظات، شركات، منتجات المتجر (بدون auth) |
+| **Customer** | تسجيل/دخول OTP، طلبات شراء، طلبات صيانة |
+| **Super Admin** | شركات، موردين، منتجات، محفظة |
+| **Company** | منتجات، كتالوج، تقسيط |
+
+> ملف `Watafl_New_Features.postman_collection.json` للميزات القديمة فقط — استخدم المجموعة الرئيسية.
 
 ---
 
@@ -1444,3 +1869,23 @@ toast.success(response.data.message);
 | 33 | POST | `/company/catalog/remove` | Company |
 | 34 | POST | `/company/catalog/{id}` | Company |
 | 35 | DELETE | `/company/catalog/{id}` | Company |
+| 36 | GET | `/public/governorates` | — |
+| 37 | GET | `/public/companies` | — |
+| 38 | GET | `/public/companies/{id}` | — |
+| 39 | GET | `/public/companies/{id}/products` | — |
+| 40 | POST | `/customer/auth/check-phone` | — |
+| 41 | POST | `/customer/login` | — |
+| 42 | POST | `/customer/register/request-otp` | — |
+| 43 | POST | `/customer/register/verify` | — |
+| 44 | POST | `/customer/logout` | Customer |
+| 45 | GET | `/customer/me` | Customer |
+| 46 | GET | `/customer/orders` | Customer |
+| 47 | POST | `/customer/orders` | Customer |
+| 48 | GET | `/customer/orders/{id}` | Customer |
+| 49 | GET | `/customer/maintenance-requests` | Customer |
+| 50 | POST | `/customer/maintenance-requests` | Customer |
+| 51 | GET | `/customer/maintenance-requests/{id}` | Customer |
+| 52 | POST | `/customer/companies/{id}/like` | Customer |
+| 53 | DELETE | `/customer/companies/{id}/like` | Customer |
+| 54 | POST | `/customer/companies/{id}/rating` | Customer |
+| 55 | DELETE | `/customer/companies/{id}/rating` | Customer |

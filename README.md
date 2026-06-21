@@ -2,7 +2,7 @@
 
 Backend API مبني على Laravel 11 لإدارة الشركات والموردين ومنتجاتهم.
 
-📄 **توثيق الـ Endpoints (للفرونت):** [API_ENDPOINTS.md](API_ENDPOINTS.md) — شرح مفصّل لكل endpoint مع أمثلة تكامل.
+📄 **Postman Collection:** [Watafl.postman_collection.json](Watafl.postman_collection.json) — مجموعة كاملة: Public + Customer + Super Admin + Company.
 
 📄 **توثيق المشروع:** [DOCUMENTATION.md](DOCUMENTATION.md) — التثبيت، قاعدة البيانات، وهيكل المشروع.
 

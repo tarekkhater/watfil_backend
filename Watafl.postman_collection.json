@@ -2,7 +2,7 @@
   "info": {
     "name": "Watafl API",
     "_postman_id": "watafl-api-collection",
-    "description": "# Watafl API Collection\n\nمجموعة كاملة لكل endpoints الخاصة بمشروع Watafl.\n\n## الـ Authentication\nالمشروع يستخدم **Laravel Sanctum** (Bearer Token).\n\n### Super Admin\n- Login بالـ email والـ password\n- بعد الـ login استخدم الـ token في header: `Authorization: Bearer {token}`\n\n### Company\n- Login بالـ tax_number والـ password\n- بعد الـ login استخدم الـ token في header: `Authorization: Bearer {token}`\n\n## الـ Base URL\n```\nhttp://localhost:8000/api\n```\n\n## ملاحظات\n- endpoints اللي بترفع صور تستخدم `form-data`\n- endpoints التانية تستخدم `JSON`\n- Super Admin الافتراضي: `admin@watafl.com` / `Admin@1234`",
+    "description": "# Watafl API — المجموعة الكاملة\n\nتوثيق شامل لكل endpoints المشروع.\n\n## الأدوار\n| الدور | Prefix | Auth |\n|-------|--------|------|\n| **Public** | `/public/*` | بدون token |\n| **Customer** | `/customer/*` | Bearer token (بعد تسجيل الدخول) |\n| **Super Admin** | `/super-admin/*` | Bearer token |\n| **Company** | `/company/*` | Bearer token |\n\n## الإعداد السريع\n1. استورد المجموعة في Postman\n2. تأكد أن `base_url` = `http://localhost:8000/api`\n3. شغّل **Super Admin → Auth → Login** لحفظ `super_admin_token`\n4. شغّل **Company → Auth → Login** لحفظ `company_token`\n5. شغّل **Customer → Auth → Register/Login** لحفظ `customer_token`\n\n## بيانات افتراضية\n- Super Admin: `admin@watafl.com` / `Admin@1234`\n- Company: `tax_number` + `password` (أنشئها من Super Admin)\n- Customer: رقم موبايل مصري `01xxxxxxxxx`\n\n## ملاحظات\n- endpoints رفع الصور → `form-data`\n- endpoints JSON → `application/json`\n- التعديل مع صور → `POST` مش PUT\n- `cash_price` بدل `price` — مع `installment_plans` اختياري\n- OTP يظهر في response كـ `debug_otp` عند `APP_DEBUG=true`\n\n## التوثيق\nراجع `API_ENDPOINTS.md` و `DOCUMENTATION.md` في المشروع.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -20,9 +20,566 @@
       "key": "company_token",
       "value": "",
       "type": "string"
+    },
+    {
+      "key": "customer_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "governorate_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "company_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "product_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "supplier_product_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "order_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "maintenance_request_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "customer_phone",
+      "value": "01285254756",
+      "type": "string"
+    },
+    {
+      "key": "debug_otp",
+      "value": "123456",
+      "type": "string"
     }
   ],
   "item": [
+    {
+      "name": "Public (بدون تسجيل)",
+      "description": "تصفح عام للمستخدم النهائي — **لا يحتاج token**.\n\n**تدفق الفرونت:**\n1. حدد المحافظة من اللوكيشن أو الفلتر\n2. اعرض الشركات في المحافظة\n3. ادخل متجر شركة واعرض منتجاتها\n4. عند الشراء/الصيانة → انتقل لـ Customer Auth",
+      "item": [
+        {
+          "name": "Governorates",
+          "description": "قائمة المحافظات المصرية — للفلتر وdropdown.",
+          "item": [
+            {
+              "name": "Get All Governorates",
+              "request": {
+                "method": "GET",
+                "header": [
+                  { "key": "Accept", "value": "application/json" }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/public/governorates",
+                  "host": ["{{base_url}}"],
+                  "path": ["public", "governorates"]
+                },
+                "description": "## قائمة المحافظات\n\n`GET /public/governorates`\n\n**Auth:** لا يوجد\n\n**Response:**\n```json\n{\n  \"data\": [\n    { \"id\": 1, \"name_ar\": \"القاهرة\", \"name_en\": \"Cairo\" }\n  ]\n}\n```\n\n**للفرونت:** استخدم `id` كـ `governorate_id` في فلتر الشركات."
+              }
+            }
+          ]
+        },
+        {
+          "name": "Companies",
+          "description": "عرض الشركات النشطة حسب المحافظة — بدون `tax_number`.",
+          "item": [
+            {
+              "name": "Get Companies by Governorate",
+              "request": {
+                "method": "GET",
+                "header": [
+                  { "key": "Accept", "value": "application/json" }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/public/companies?governorate_id={{governorate_id}}&page=1",
+                  "host": ["{{base_url}}"],
+                  "path": ["public", "companies"],
+                  "query": [
+                    { "key": "governorate_id", "value": "{{governorate_id}}", "description": "مطلوب — ID المحافظة" },
+                    { "key": "page", "value": "1", "description": "رقم الصفحة (15 شركة/صفحة)" }
+                  ]
+                },
+                "description": "## شركات المحافظة\n\n`GET /public/companies?governorate_id={id}`\n\n**Auth:** لا يوجد (اختياري: Bearer customer token لـ `is_liked` و `my_rating`)\n\n**Response fields:**\n- `likes_count` — عدد الإعجابات\n- `ratings_count` — عدد التقييمات\n- `average_rating` — متوسط التقييم (1-5)\n- `is_liked`, `my_rating` — لو العميل مسجل دخول"
+              }
+            },
+            {
+              "name": "Get Company Details",
+              "request": {
+                "method": "GET",
+                "header": [
+                  { "key": "Accept", "value": "application/json" }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/public/companies/{{company_id}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["public", "companies", "{{company_id}}"]
+                },
+                "description": "## تفاصيل شركة\n\n`GET /public/companies/{id}`\n\n**Auth:** لا يوجد\n\n**404:** إذا الشركة غير نشطة (`is_active = false`)."
+              }
+            }
+          ]
+        },
+        {
+          "name": "Store Products",
+          "description": "منتجات متجر الشركة = منتجاتها الخاصة + منتجات الكتالوج من الموردين.",
+          "item": [
+            {
+              "name": "Get Store Products",
+              "request": {
+                "method": "GET",
+                "header": [
+                  { "key": "Accept", "value": "application/json" }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/public/companies/{{company_id}}/products?page=1",
+                  "host": ["{{base_url}}"],
+                  "path": ["public", "companies", "{{company_id}}", "products"],
+                  "query": [{ "key": "page", "value": "1" }]
+                },
+                "description": "## منتجات المتجر\n\n`GET /public/companies/{id}/products`\n\n**Auth:** لا يوجد\n\n**كل منتج يتضمن:**\n| Field | الوصف |\n|-------|-------|\n| `source` | `company` = منتج خاص — `catalog` = من مورد |\n| `cash_price` | سعر الكاش |\n| `installment_plans[]` | خطط التقسيط |\n| `supplier` | بيانات المورد (للكتالوج فقط) |\n\n**عند الطلب:**\n- `source: company` → `product_type: company_product`\n- `source: catalog` → `product_type: supplier_product`"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Customer (المستخدم النهائي)",
+      "description": "المستخدم النهائي — تسجيل بالموبايل، طلب شراء، طلب صيانة.\n\n**تدفق Auth:**\n1. `check-phone` → exists?\n2. true → `login` بالباسورد\n3. false → `request-otp` ثم `register/verify`\n\n**الطلبات تتطلب token.**",
+      "item": [
+        {
+          "name": "Auth",
+          "description": "تسجيل دخول هجين: موبايل موجود → باسورد | جديد → OTP.",
+          "item": [
+            {
+              "name": "Check Phone",
+              "request": {
+                "method": "POST",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Content-Type", "value": "application/json" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"phone\": \"{{customer_phone}}\"\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "url": {
+                  "raw": "{{base_url}}/customer/auth/check-phone",
+                  "host": ["{{base_url}}"],
+                  "path": ["customer", "auth", "check-phone"]
+                },
+                "description": "## التحقق من رقم الهاتف\n\n`POST /customer/auth/check-phone`\n\n**Auth:** لا يوجد\n\n**Body:** `phone` — رقم مصري `01xxxxxxxxx`\n\n**Response:**\n```json\n{ \"exists\": true }\n```\n\n- `true` → اعرض شاشة الباسورد\n- `false` → ابدأ تسجيل OTP"
+              }
+            },
+            {
+              "name": "Login (حساب موجود)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Content-Type", "value": "application/json" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"phone\": \"{{customer_phone}}\",\n  \"password\": \"Customer@1234\"\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "url": {
+                  "raw": "{{base_url}}/customer/login",
+                  "host": ["{{base_url}}"],
+                  "path": ["customer", "login"]
+                },
+                "description": "## تسجيل الدخول\n\n`POST /customer/login`\n\n**Body:** `phone`, `password`\n\n**Response:** `token` + `customer` (name, phone, governorate)\n\nيحفظ الـ token في `customer_token`."
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "var res = pm.response.json();",
+                      "if (res.token) {",
+                      "    pm.collectionVariables.set('customer_token', res.token);",
+                      "    console.log('Customer token saved');",
+                      "}"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Request OTP (حساب جديد)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Content-Type", "value": "application/json" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"phone\": \"{{customer_phone}}\"\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "url": {
+                  "raw": "{{base_url}}/customer/register/request-otp",
+                  "host": ["{{base_url}}"],
+                  "path": ["customer", "register", "request-otp"]
+                },
+                "description": "## طلب OTP\n\n`POST /customer/register/request-otp`\n\n**Body:** `phone` — رقم غير مسجل\n\n**Response:**\n```json\n{\n  \"message\": \"تم إرسال رمز التحقق\",\n  \"debug_otp\": \"123456\"\n}\n```\n\n> `debug_otp` يظهر فقط عند `APP_DEBUG=true`"
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "var res = pm.response.json();",
+                      "if (res.debug_otp) {",
+                      "    pm.collectionVariables.set('debug_otp', res.debug_otp);",
+                      "    console.log('OTP:', res.debug_otp);",
+                      "}"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Register & Verify OTP",
+              "request": {
+                "method": "POST",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Content-Type", "value": "application/json" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"phone\": \"{{customer_phone}}\",\n  \"otp\": \"{{debug_otp}}\",\n  \"name\": \"كيرلس منير\",\n  \"password\": \"Customer@1234\",\n  \"password_confirmation\": \"Customer@1234\",\n  \"governorate_id\": {{governorate_id}}\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "url": {
+                  "raw": "{{base_url}}/customer/register/verify",
+                  "host": ["{{base_url}}"],
+                  "path": ["customer", "register", "verify"]
+                },
+                "description": "## إنشاء حساب\n\n`POST /customer/register/verify`\n\n| Field | مطلوب |\n|-------|-------|\n| `phone` | ✅ |\n| `otp` | ✅ (6 أرقام) |\n| `name` | ✅ |\n| `password` | ✅ (8+ أحرف) |\n| `password_confirmation` | ✅ |\n| `governorate_id` | ✅ |\n\n**Response `201`:** `token` + `customer`"
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "var res = pm.response.json();",
+                      "if (res.token) {",
+                      "    pm.collectionVariables.set('customer_token', res.token);",
+                      "}"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Me (بياناتي)",
+              "request": {
+                "method": "GET",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{customer_token}}" }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/customer/me",
+                  "host": ["{{base_url}}"],
+                  "path": ["customer", "me"]
+                },
+                "description": "`GET /customer/me` — بيانات العميل المسجل."
+              }
+            },
+            {
+              "name": "Logout",
+              "request": {
+                "method": "POST",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{customer_token}}" }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/customer/logout",
+                  "host": ["{{base_url}}"],
+                  "path": ["customer", "logout"]
+                },
+                "description": "`POST /customer/logout` — حذف الـ token الحالي."
+              }
+            }
+          ]
+        },
+        {
+          "name": "Orders (طلبات الشراء)",
+          "description": "طلب شراء منتج واحد — **يتطلب تسجيل دخول**.",
+          "item": [
+            {
+              "name": "Create Order — Company Product",
+              "request": {
+                "method": "POST",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Content-Type", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{customer_token}}" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"company_id\": {{company_id}},\n  \"product_type\": \"company_product\",\n  \"product_id\": {{product_id}},\n  \"quantity\": 1,\n  \"delivery_address\": \"القاهرة، مدينة نصر، شارع مصطفى النحاس\",\n  \"notes\": \"اتصل قبل التوصيل\"\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "url": {
+                  "raw": "{{base_url}}/customer/orders",
+                  "host": ["{{base_url}}"],
+                  "path": ["customer", "orders"]
+                },
+                "description": "## إنشاء طلب شراء\n\n`POST /customer/orders`\n\n**Auth:** Customer token\n\n| Field | القيم |\n|-------|-------|\n| `product_type` | `company_product` أو `supplier_product` |\n| `product_id` | ID المنتج من المتجر |\n| `quantity` | افتراضي 1 |\n| `delivery_address` | مطلوب |\n\n**التحقق:**\n- الشركة نشطة\n- المنتج نشط وموجود في متجر الشركة\n- السعر يُحفظ snapshot وقت الطلب\n\n**status:** `pending`"
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "var res = pm.response.json();",
+                      "if (res.data && res.data.id) {",
+                      "    pm.collectionVariables.set('order_id', res.data.id);",
+                      "}"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Create Order — Catalog Product",
+              "request": {
+                "method": "POST",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Content-Type", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{customer_token}}" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"company_id\": {{company_id}},\n  \"product_type\": \"supplier_product\",\n  \"product_id\": {{supplier_product_id}},\n  \"quantity\": 1,\n  \"delivery_address\": \"القاهرة، مدينة نصر\"\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "url": {
+                  "raw": "{{base_url}}/customer/orders",
+                  "host": ["{{base_url}}"],
+                  "path": ["customer", "orders"]
+                },
+                "description": "طلب شراء منتج من **كتالوج الموردين** (`source: catalog` في المتجر).\n\n`product_type` = `supplier_product`"
+              }
+            },
+            {
+              "name": "Get My Orders",
+              "request": {
+                "method": "GET",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{customer_token}}" }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/customer/orders?page=1",
+                  "host": ["{{base_url}}"],
+                  "path": ["customer", "orders"],
+                  "query": [{ "key": "page", "value": "1" }]
+                },
+                "description": "`GET /customer/orders` — قائمة طلباتي مع pagination."
+              }
+            },
+            {
+              "name": "Get Order Details",
+              "request": {
+                "method": "GET",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{customer_token}}" }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/customer/orders/{{order_id}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["customer", "orders", "{{order_id}}"]
+                },
+                "description": "`GET /customer/orders/{id}` — تفاصيل طلب مع بيانات المنتج والشركة.\n\n**403:** إذا الطلب لا يخص العميل."
+              }
+            }
+          ]
+        },
+        {
+          "name": "Maintenance Requests (طلبات الصيانة)",
+          "description": "طلب صيانة لشركة — **يتطلب تسجيل دخول**.",
+          "item": [
+            {
+              "name": "Create Maintenance Request",
+              "request": {
+                "method": "POST",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{customer_token}}" }
+                ],
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    { "key": "company_id", "value": "{{company_id}}", "type": "text", "description": "ID الشركة (مطلوب)" },
+                    { "key": "description", "value": "فلتر المياه بيسرب مياه", "type": "text", "description": "وصف المشكلة (مطلوب)" },
+                    { "key": "address", "value": "القاهرة، مدينة نصر", "type": "text", "description": "العنوان (اختياري)" },
+                    { "key": "image", "value": "", "type": "file", "description": "صورة المشكلة (اختياري، max 2MB)" }
+                  ]
+                },
+                "url": {
+                  "raw": "{{base_url}}/customer/maintenance-requests",
+                  "host": ["{{base_url}}"],
+                  "path": ["customer", "maintenance-requests"]
+                },
+                "description": "## طلب صيانة\n\n`POST /customer/maintenance-requests`\n\n**Auth:** Customer token\n**Content-Type:** `multipart/form-data`\n\n| Field | مطلوب |\n|-------|-------|\n| `company_id` | ✅ |\n| `description` | ✅ |\n| `address` | ❌ |\n| `image` | ❌ |\n\n**status:** `pending` → `in_progress` → `completed` / `cancelled`"
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "var res = pm.response.json();",
+                      "if (res.data && res.data.id) {",
+                      "    pm.collectionVariables.set('maintenance_request_id', res.data.id);",
+                      "}"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Get My Maintenance Requests",
+              "request": {
+                "method": "GET",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{customer_token}}" }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/customer/maintenance-requests?page=1",
+                  "host": ["{{base_url}}"],
+                  "path": ["customer", "maintenance-requests"],
+                  "query": [{ "key": "page", "value": "1" }]
+                },
+                "description": "`GET /customer/maintenance-requests` — قائمة طلبات الصيانة."
+              }
+            },
+            {
+              "name": "Get Maintenance Request Details",
+              "request": {
+                "method": "GET",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{customer_token}}" }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/customer/maintenance-requests/{{maintenance_request_id}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["customer", "maintenance-requests", "{{maintenance_request_id}}"]
+                },
+                "description": "`GET /customer/maintenance-requests/{id}` — تفاصيل طلب صيانة."
+              }
+            }
+          ]
+        },
+        {
+          "name": "Company Likes & Ratings (إعجاب وتقييم)",
+          "description": "العميل يعمل like وتقييم للشركات — **يتطلب تسجيل دخول**.\n\nكل like/toggle يرجع بيانات الشركة مع `likes_count`, `average_rating`, `ratings_count`.",
+          "item": [
+            {
+              "name": "Like Company",
+              "request": {
+                "method": "POST",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{customer_token}}" }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/customer/companies/{{company_id}}/like",
+                  "host": ["{{base_url}}"],
+                  "path": ["customer", "companies", "{{company_id}}", "like"]
+                },
+                "description": "## إعجاب بشركة\n\n`POST /customer/companies/{id}/like`\n\n**Auth:** Customer token\n\n**422:** إذا أعجب بالشركة من قبل.\n\n**Response:** بيانات الشركة مع `likes_count` محدّث و `is_liked: true`"
+              }
+            },
+            {
+              "name": "Unlike Company",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{customer_token}}" }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/customer/companies/{{company_id}}/like",
+                  "host": ["{{base_url}}"],
+                  "path": ["customer", "companies", "{{company_id}}", "like"]
+                },
+                "description": "## إلغاء الإعجاب\n\n`DELETE /customer/companies/{id}/like`\n\n**422:** إذا لم يعجب بالشركة من قبل."
+              }
+            },
+            {
+              "name": "Rate Company",
+              "request": {
+                "method": "POST",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Content-Type", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{customer_token}}" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"rating\": 5,\n  \"comment\": \"خدمة ممتازة وسريعة\"\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "url": {
+                  "raw": "{{base_url}}/customer/companies/{{company_id}}/rating",
+                  "host": ["{{base_url}}"],
+                  "path": ["customer", "companies", "{{company_id}}", "rating"]
+                },
+                "description": "## تقييم شركة\n\n`POST /customer/companies/{id}/rating`\n\n| Field | مطلوب | القيود |\n|-------|-------|--------|\n| `rating` | ✅ | 1–5 |\n| `comment` | ❌ | max 1000 |\n\n**Upsert:** تحديث التقييم لو موجود.\n\n**Response:** `average_rating`, `ratings_count`, `my_rating`"
+              }
+            },
+            {
+              "name": "Remove Rating",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{customer_token}}" }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/customer/companies/{{company_id}}/rating",
+                  "host": ["{{base_url}}"],
+                  "path": ["customer", "companies", "{{company_id}}", "rating"]
+                },
+                "description": "## حذف التقييم\n\n`DELETE /customer/companies/{id}/rating`"
+              }
+            }
+          ]
+        }
+      ]
+    },
     {
       "name": "Super Admin",
       "description": "كل الـ endpoints الخاصة بالسوبر أدمن — المصادقة وإدارة الشركات والموردين والمنتجات.",

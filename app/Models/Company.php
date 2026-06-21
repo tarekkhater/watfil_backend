@@ -4,8 +4,9 @@ namespace App\Models;
 
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Builder;
 use Laravel\Sanctum\HasApiTokens;
 
 class Company extends Authenticatable
@@ -45,5 +46,35 @@ class Company extends Authenticatable
     public function catalogProducts(): BelongsToMany
     {
         return $this->belongsToMany(SupplierProduct::class, 'company_catalog');
+    }
+
+    public function likes(): HasMany
+    {
+        return $this->hasMany(CompanyLike::class);
+    }
+
+    public function ratings(): HasMany
+    {
+        return $this->hasMany(CompanyRating::class);
+    }
+
+    public function scopeWithPublicStats(Builder $query, ?int $customerId = null): Builder
+    {
+        $query->withCount(['likes', 'ratings'])
+            ->withAvg('ratings', 'rating');
+
+        if ($customerId) {
+            $query->select('companies.*')
+                ->withExists(['likes as is_liked' => fn ($q) => $q->where('customer_id', $customerId)])
+                ->addSelect([
+                    'my_rating' => CompanyRating::query()
+                        ->select('rating')
+                        ->whereColumn('company_id', 'companies.id')
+                        ->where('customer_id', $customerId)
+                        ->limit(1),
+                ]);
+        }
+
+        return $query;
     }
 }

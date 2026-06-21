@@ -3,12 +3,62 @@
 use App\Http\Controllers\Company\AuthController as CompanyAuthController;
 use App\Http\Controllers\Company\CatalogController;
 use App\Http\Controllers\Company\ProductController as CompanyProductController;
+use App\Http\Controllers\Customer\AuthController as CustomerAuthController;
+use App\Http\Controllers\Customer\CompanyEngagementController as CustomerCompanyEngagementController;
+use App\Http\Controllers\Customer\MaintenanceRequestController as CustomerMaintenanceRequestController;
+use App\Http\Controllers\Customer\OrderController as CustomerOrderController;
+use App\Http\Controllers\Public\CompanyController as PublicCompanyController;
+use App\Http\Controllers\Public\GovernorateController as PublicGovernorateController;
+use App\Http\Controllers\Public\StoreController as PublicStoreController;
 use App\Http\Controllers\SuperAdmin\AuthController as SuperAdminAuthController;
 use App\Http\Controllers\SuperAdmin\CompanyController;
 use App\Http\Controllers\SuperAdmin\GovernorateController;
 use App\Http\Controllers\SuperAdmin\SupplierController;
 use App\Http\Controllers\SuperAdmin\SupplierProductController;
 use Illuminate\Support\Facades\Route;
+
+/*
+|--------------------------------------------------------------------------
+| Public Routes (no auth)
+|--------------------------------------------------------------------------
+*/
+Route::prefix('public')->group(function () {
+    Route::get('governorates', [PublicGovernorateController::class, 'index']);
+    Route::get('companies', [PublicCompanyController::class, 'index']);
+    Route::get('companies/{company}', [PublicCompanyController::class, 'show']);
+    Route::get('companies/{company}/products', [PublicStoreController::class, 'products']);
+});
+
+/*
+|--------------------------------------------------------------------------
+| Customer Routes
+|--------------------------------------------------------------------------
+*/
+Route::prefix('customer')->group(function () {
+
+    Route::post('auth/check-phone', [CustomerAuthController::class, 'checkPhone']);
+    Route::post('login', [CustomerAuthController::class, 'login']);
+    Route::post('register/request-otp', [CustomerAuthController::class, 'requestOtp']);
+    Route::post('register/verify', [CustomerAuthController::class, 'verifyRegistration']);
+
+    Route::middleware(['auth:sanctum', 'customer'])->group(function () {
+        Route::post('logout', [CustomerAuthController::class, 'logout']);
+        Route::get('me', [CustomerAuthController::class, 'me']);
+
+        Route::get('orders', [CustomerOrderController::class, 'index']);
+        Route::post('orders', [CustomerOrderController::class, 'store']);
+        Route::get('orders/{order}', [CustomerOrderController::class, 'show']);
+
+        Route::get('maintenance-requests', [CustomerMaintenanceRequestController::class, 'index']);
+        Route::post('maintenance-requests', [CustomerMaintenanceRequestController::class, 'store']);
+        Route::get('maintenance-requests/{maintenanceRequest}', [CustomerMaintenanceRequestController::class, 'show']);
+
+        Route::post('companies/{company}/like', [CustomerCompanyEngagementController::class, 'like']);
+        Route::delete('companies/{company}/like', [CustomerCompanyEngagementController::class, 'unlike']);
+        Route::post('companies/{company}/rating', [CustomerCompanyEngagementController::class, 'rate']);
+        Route::delete('companies/{company}/rating', [CustomerCompanyEngagementController::class, 'removeRating']);
+    });
+});
 
 /*
 |--------------------------------------------------------------------------

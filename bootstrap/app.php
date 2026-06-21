@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\CompanyMiddleware;
+use App\Http\Middleware\CustomerMiddleware;
 use App\Http\Middleware\SuperAdminMiddleware;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -17,6 +18,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'super_admin' => SuperAdminMiddleware::class,
             'company'     => CompanyMiddleware::class,
+            'customer'    => CustomerMiddleware::class,
         ]);
 
         $middleware->statefulApi();
