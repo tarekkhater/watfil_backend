@@ -1,0 +1,190 @@
+openapi: 3.0.3
+info:
+  title: Watfil API — Customers (Plan 2)
+  version: 1.0.0
+  description: Customer registration, authentication, profile, and company customer listing.
+servers:
+  - url: http://localhost:8000/api
+paths:
+  /customer/register:
+    post:
+      tags: [Customer Auth]
+      summary: Register a new customer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterCustomerRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerAuthResponse'
+  /customer/login:
+    post:
+      tags: [Customer Auth]
+      summary: Customer login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [phone, password]
+              properties:
+                phone:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerAuthResponse'
+  /customer/logout:
+    post:
+      tags: [Customer Auth]
+      security: [{ bearerAuth: [] }]
+      summary: Customer logout
+      responses:
+        '200':
+          description: OK
+  /customer/me:
+    get:
+      tags: [Customer Auth]
+      security: [{ bearerAuth: [] }]
+      summary: Get authenticated customer profile
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Customer'
+  /customer/profile:
+    patch:
+      tags: [Customer Auth]
+      security: [{ bearerAuth: [] }]
+      summary: Update customer profile
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateCustomerProfileRequest'
+      responses:
+        '200':
+          description: OK
+  /company/customers:
+    get:
+      tags: [Company Customers]
+      security: [{ bearerAuth: [] }]
+      summary: List customers linked to the authenticated company
+      parameters:
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: [active, inactive]
+        - in: query
+          name: search
+          schema:
+            type: string
+        - in: query
+          name: per_page
+          schema:
+            type: integer
+            default: 15
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/CustomerCompanyLink'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+  schemas:
+    PaginationMeta:
+      type: object
+      properties:
+        total: { type: integer }
+        current_page: { type: integer }
+        last_page: { type: integer }
+        per_page: { type: integer }
+    CustomerProfile:
+      type: object
+      properties:
+        full_name: { type: string }
+        governorate_id: { type: integer, nullable: true }
+        city: { type: string, nullable: true }
+        address: { type: string, nullable: true }
+        avatar: { type: string, nullable: true }
+        date_of_birth: { type: string, format: date, nullable: true }
+        gender: { type: string, enum: [male, female], nullable: true }
+        risk_flag: { type: boolean }
+    Customer:
+      type: object
+      properties:
+        id: { type: integer }
+        phone: { type: string }
+        email: { type: string, nullable: true }
+        is_active: { type: boolean }
+        profile:
+          $ref: '#/components/schemas/CustomerProfile'
+        created_at: { type: string }
+    CustomerAuthResponse:
+      type: object
+      properties:
+        message: { type: string }
+        token: { type: string }
+        customer:
+          $ref: '#/components/schemas/Customer'
+    CustomerCompanyLink:
+      type: object
+      properties:
+        id: { type: integer }
+        status: { type: string, enum: [active, inactive] }
+        linked_at: { type: string }
+        customer:
+          $ref: '#/components/schemas/Customer'
+    RegisterCustomerRequest:
+      type: object
+      required: [phone, password, password_confirmation, full_name]
+      properties:
+        phone: { type: string }
+        email: { type: string, format: email }
+        password: { type: string, minLength: 8 }
+        password_confirmation: { type: string }
+        full_name: { type: string }
+        governorate_id: { type: integer }
+        city: { type: string }
+        address: { type: string }
+        company_id: { type: integer }
+    UpdateCustomerProfileRequest:
+      type: object
+      properties:
+        email: { type: string, format: email, nullable: true }
+        full_name: { type: string }
+        governorate_id: { type: integer, nullable: true }
+        city: { type: string, nullable: true }
+        address: { type: string, nullable: true }
+        date_of_birth: { type: string, format: date, nullable: true }
+        gender: { type: string, enum: [male, female], nullable: true }

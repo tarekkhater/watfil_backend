@@ -48,6 +48,38 @@ class Company extends Authenticatable
         return $this->belongsToMany(SupplierProduct::class, 'company_catalog');
     }
 
+    public function walletTransactions(): HasMany
+    {
+        return $this->hasMany(WalletTransaction::class);
+    }
+
+    public function commissionEvents(): HasMany
+    {
+        return $this->hasMany(CommissionEvent::class);
+    }
+
+    public function withdrawalRequests(): HasMany
+    {
+        return $this->hasMany(WithdrawalRequest::class);
+    }
+
+    public function customerLinks(): HasMany
+    {
+        return $this->hasMany(CustomerCompanyLink::class);
+    }
+
+    public function customers(): BelongsToMany
+    {
+        return $this->belongsToMany(Customer::class, 'customer_company_links')
+            ->withPivot(['status', 'linked_at'])
+            ->withTimestamps();
+    }
+
+    public function orders(): HasMany
+    {
+        return $this->hasMany(Order::class);
+    }
+
     public function likes(): HasMany
     {
         return $this->hasMany(CompanyLike::class);
