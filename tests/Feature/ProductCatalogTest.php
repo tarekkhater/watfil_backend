@@ -117,6 +117,36 @@ class ProductCatalogTest extends TestCase
         ]);
     }
 
+    public function test_admin_can_create_supplier_product_with_category(): void
+    {
+        Sanctum::actingAs($this->createSuperAdmin());
+
+        $this->seedProductCatalog();
+
+        $supplier = \App\Models\Supplier::create([
+            'name'      => 'مورد تجريبي',
+            'phone'     => '01011112222',
+            'is_active' => true,
+        ]);
+
+        $category = Category::where('name', 'RO devices')->firstOrFail();
+
+        $this->postJson('/api/super-admin/supplier-products', [
+            'name'        => 'فلتر مورد',
+            'cash_price'  => 5000,
+            'supplier_id' => $supplier->id,
+            'category_id' => $category->id,
+            'is_active'   => true,
+        ])->assertCreated()
+            ->assertJsonPath('data.category.id', $category->id)
+            ->assertJsonPath('data.category.product_type_id', $category->product_type_id);
+
+        $this->assertDatabaseHas('supplier_products', [
+            'name'        => 'فلتر مورد',
+            'category_id' => $category->id,
+        ]);
+    }
+
     /** @return array{0: Company, 1: Category, 2: Category} */
     private function createStoreFixture(bool $withCompanyAuth = false): array
     {

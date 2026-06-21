@@ -2,7 +2,7 @@
     "info": {
         "name": "Watfil API — Complete",
         "_postman_id": "watfil-api-complete-2026-v3",
-        "description": "# Watfil API — 89 Endpoint\n\n**Base URL:** `{{base_url}}` = `http://localhost:8000/api`\n\n---\n\n## البداية السريعة\n\n```\nphp artisan migrate --seed\nphp artisan serve\n```\n\n1. Import هذا الملف في Postman\n2. شغّل **00 — Setup Flow** (11 خطوة)\n3. استخدم مجلد **All Endpoints** لأي endpoint\n\n**Super Admin:** `admin@watafl.com` / `Admin@1234`\n\n---\n\n## Headers\n\n| Header | القيمة |\n|--------|--------|\n| Accept | application/json |\n| Authorization | Bearer `{token}` |\n| Content-Type | application/json |\n\n---\n\n## شكل الاستجابة\n\n- **قائمة:** `{ data: [], meta: { total, current_page, last_page, per_page } }`\n- **طفرات:** `{ message, data }`\n- **Auth:** `{ message, token, customer }`\n- **422:** `{ message, errors: { field: [] } }`\n\n---\n\n## فهرس كل الـ Endpoints (89)\n\n- `GET /public/governorates` — GET Governorates\n- `GET /public/product-types` — GET Product Types\n- `GET /public/categories` — GET Categories\n- `GET /public/companies` — GET Companies by Governorate\n- `GET /public/companies/{{company_id}}` — GET Company Details\n- `GET /public/companies/{{company_id}}/products` — GET Store Products\n- `GET /public/companies/{{company_id}}/products/{{product_id}}/installment-plans` — GET Product Installment Plans\n- `GET /public/maintenance/lookups` — GET Maintenance Lookups\n- `POST /super-admin/login` — POST Login\n- `POST /super-admin/logout` — POST Logout\n- `GET /super-admin/me` — GET Me\n- `GET /super-admin/governorates` — GET Governorates\n- `GET /super-admin/product-types` — GET List Product Types\n- `POST /super-admin/product-types` — POST Create Product Type\n- `GET /super-admin/product-types/{{product_type_id}}` — GET Show Product Type\n- `POST /super-admin/product-types/{{product_type_id}}` — POST Update Product Type\n- `DELETE /super-admin/product-types/{{product_type_id}}` — DELETE Product Type\n- `GET /super-admin/categories` — GET List Categories\n- `POST /super-admin/categories` — POST Create Category\n- `GET /super-admin/categories/{{category_id}}` — GET Show Category\n- `POST /super-admin/categories/{{category_id}}` — POST Update Category\n- `DELETE /super-admin/categories/{{category_id}}` — DELETE Category\n- `GET /super-admin/companies` — GET List Companies\n- `POST /super-admin/companies` — POST Create Company\n- `GET /super-admin/companies/{{company_id}}` — GET Show Company\n- `POST /super-admin/companies/{{company_id}}` — POST Update Company\n- `PATCH /super-admin/companies/{{company_id}}/toggle-status` — PATCH Toggle Status\n- `DELETE /super-admin/companies/{{company_id}}` — DELETE Company\n- `GET /super-admin/companies/{{company_id}}/wallet` — GET Show Wallet\n- `PATCH /super-admin/companies/{{company_id}}/wallet` — PATCH Set Balance\n- `POST /super-admin/companies/{{company_id}}/wallet/adjust` — POST Adjust Wallet\n- `GET /super-admin/companies/{{company_id}}/wallet/transactions` — GET Wallet Transactions\n- `GET /super-admin/finance/commissions/summary` — GET Commission Summary\n- `GET /super-admin/finance/withdrawal-requests` — GET Withdrawal Requests\n- `PATCH /super-admin/finance/withdrawal-requests/{{withdrawal_request_id}}/approve` — PATCH Approve Withdrawal\n- `PATCH /super-admin/finance/withdrawal-requests/{{withdrawal_request_id}}/reject` — PATCH Reject Withdrawal\n- `PATCH /super-admin/finance/withdrawal-requests/{{withdrawal_request_id}}/pay` — PATCH Pay Withdrawal\n- `GET /super-admin/suppliers` — GET List Suppliers\n- `POST /super-admin/suppliers` — POST Create Supplier\n- `GET /super-admin/suppliers/{{supplier_id}}` — GET Show Supplier\n- `POST /super-admin/suppliers/{{supplier_id}}` — POST Update Supplier\n- `DELETE /super-admin/suppliers/{{supplier_id}}` — DELETE Supplier\n- `GET /super-admin/supplier-products` — GET List Supplier Products\n- `POST /super-admin/supplier-products` — POST Create Supplier Product\n- `GET /super-admin/supplier-products/{{supplier_product_id}}` — GET Show Supplier Product\n- `POST /super-admin/supplier-products/{{supplier_product_id}}` — POST Update Supplier Product\n- `PATCH /super-admin/supplier-products/{{supplier_product_id}}/toggle-status` — PATCH Toggle Product Status\n- `DELETE /super-admin/supplier-products/{{supplier_product_id}}` — DELETE Supplier Product\n- `GET /super-admin/orders` — GET List Orders\n- `GET /super-admin/orders/{{order_id}}` — GET Show Order\n- `POST /company/login` — POST Login\n- `POST /company/logout` — POST Logout\n- `GET /company/me` — GET Me\n- `GET /company/products` — GET List Products\n- `POST /company/products` — POST Create Product\n- `GET /company/products/{{product_id}}` — GET Show Product\n- `POST /company/products/{{product_id}}` — POST Update Product\n- `DELETE /company/products/{{product_id}}` — DELETE Product\n- `GET /company/catalog/available` — GET Available Catalog\n- `GET /company/catalog/mine` — GET My Catalog\n- `POST /company/catalog/add` — POST Add to Catalog (bulk)\n- `POST /company/catalog/remove` — POST Remove from Catalog (bulk)\n- `POST /company/catalog/{{supplier_product_id}}` — POST Add Single to Catalog\n- `DELETE /company/catalog/{{supplier_product_id}}` — DELETE Remove from Catalog\n- `GET /company/wallet/transactions` — GET Wallet Transactions\n- `POST /company/wallet/withdrawals` — POST Request Withdrawal\n- `GET /company/customers` — GET List Customers\n- `GET /company/orders` — GET List Orders\n- `POST /company/orders` — POST Create Order\n- `GET /company/orders/{{order_id}}` — GET Show Order\n- `PATCH /company/orders/{{order_id}}/status` — PATCH Update Order Status\n- `POST /customer/register` — POST Register\n- `POST /customer/login` — POST Login\n- `POST /customer/logout` — POST Logout\n- `GET /customer/me` — GET Me\n- `PATCH /customer/profile` — PATCH Update Profile\n- `POST /customer/auth/check-phone` — POST Check Phone\n- `POST /customer/register/request-otp` — POST Request OTP\n- `POST /customer/register/verify` — POST Verify Registration\n- `GET /customer/orders` — GET List Orders\n- `POST /customer/orders` — POST Create Order\n- `GET /customer/orders/{{order_id}}` — GET Show Order\n- `GET /customer/maintenance-requests` — GET List Maintenance Requests\n- `POST /customer/maintenance-requests` — POST Create Maintenance Request\n- `GET /customer/maintenance-requests/{{maintenance_request_id}}` — GET Show Maintenance Request\n- `POST /customer/companies/{{company_id}}/like` — POST Like Company\n- `DELETE /customer/companies/{{company_id}}/like` — DELETE Unlike Company\n- `POST /customer/companies/{{company_id}}/rating` — POST Rate Company\n- `DELETE /customer/companies/{{company_id}}/rating` — DELETE Remove Rating\n\n\n---\n\n## سيناريوهات\n\n**طلب + عمولة:** pending → processing → completed (5% إلا referral/internal)\n\n**سحب:** request → approve → pay (أو reject + reason)\n\n**عميل:** register + company_id للربط بالشركة",
+        "description": "# Watfil API — 89 Endpoint\n\n**Base URL:** `{{base_url}}` = `http://localhost:8000/api`\n\n---\n\n## البداية السريعة\n\n```\nphp artisan migrate --seed\nphp artisan serve\n```\n\n1. Import هذا الملف في Postman\n2. شغّل **00 — Setup Flow** (13 خطوة)\n3. راجع **01 — Product Catalog Flow** لفهم الأنواع والأقسام\n4. استخدم مجلد **All Endpoints** لأي endpoint\n\n**Super Admin:** `admin@watafl.com` / `Admin@1234`\n\n---\n\n## كatalog المنتجات (أنواع + أقسام)\n\n```\nأنواع (Product Types)     →  device | accessories | stages\n        ↓\nأقسام (Categories)        →  RO devices, cartridge, stage one…\n        ↓\nمنتج مورد (Supplier Product)  →  category_id مطلوب عند الإضافة\n        ↓\nمتجر الشركة (Company Product / Catalog)\n```\n\n| الخطوة | Endpoint | المتغير |\n|--------|----------|---------|\n| 1 | GET /super-admin/product-types | product_type_id |\n| 2 | GET /super-admin/categories?product_type_id= | category_id |\n| 3 | POST /super-admin/supplier-products | supplier_product_id |\n| 4 | POST /company/catalog/add | — |\n| 5 | GET /public/companies/{id}/products?category_id= | — |\n\n**Seeder:** `php artisan migrate --seed` يملأ الأنواع والأقسام من `types table.txt` و `categoriesTable.txt`\n\n---\n\n## الطلب بالتقسيط (Installment)\n\n```\nتعريف خطط على المنتج (Admin/Company)  →  installment_plans[]\n        ↓\nعرض للعميل (Public)  →  GET .../installment-plans\n        ↓\nإنشاء الطلب  →  payment_type: installment + installment_plan { months, down_payment, installment_amount }\n```\n\n| القاعدة | التفاصيل |\n|---------|----------|\n| منتج واحد | طلب التقسيط = item واحد فقط |\n| تطابق الخطة | القيم الثلاث يجب أن تطابق خطة معرّفة على المنتج |\n| total_amount | مقدم + (قسط × عدد الأشهر) — يُحسب ويُخزَّن في الطلب |\n| كاش | لا ترسل `installment_plan` مع `payment_type: cash` |\n\n**مدد مسموحة:** 3, 6, 9, 12, 18, 24 شهر (حسب `CompanyProductInstallmentPlan`)\n\n**Postman:** شغّل **05 — Installment Order Flow** بعد Setup Flow\n\n---\n\n## Headers\n\n| Header | القيمة |\n|--------|--------|\n| Accept | application/json |\n| Authorization | Bearer `{token}` |\n| Content-Type | application/json |\n\n---\n\n## شكل الاستجابة\n\n- **قائمة:** `{ data: [], meta: { total, current_page, last_page, per_page } }`\n- **طفرات:** `{ message, data }`\n- **Auth:** `{ message, token, customer }`\n- **422:** `{ message, errors: { field: [] } }`\n\n---\n\n## فهرس كل الـ Endpoints (89)\n\n- `GET /public/governorates` — GET Governorates\n- `GET /public/product-types` — GET Product Types\n- `GET /public/categories` — GET Categories\n- `GET /public/companies` — GET Companies by Governorate\n- `GET /public/companies/{{company_id}}` — GET Company Details\n- `GET /public/companies/{{company_id}}/products` — GET Store Products\n- `GET /public/companies/{{company_id}}/products/{{product_id}}/installment-plans` — GET Product Installment Plans\n- `GET /public/maintenance/lookups` — GET Maintenance Lookups\n- `POST /super-admin/login` — POST Login\n- `POST /super-admin/logout` — POST Logout\n- `GET /super-admin/me` — GET Me\n- `GET /super-admin/governorates` — GET Governorates\n- `GET /super-admin/product-types` — GET List Product Types\n- `POST /super-admin/product-types` — POST Create Product Type\n- `GET /super-admin/product-types/{{product_type_id}}` — GET Show Product Type\n- `POST /super-admin/product-types/{{product_type_id}}` — POST Update Product Type\n- `DELETE /super-admin/product-types/{{product_type_id}}` — DELETE Product Type\n- `GET /super-admin/categories` — GET List Categories\n- `POST /super-admin/categories` — POST Create Category\n- `GET /super-admin/categories/{{category_id}}` — GET Show Category\n- `POST /super-admin/categories/{{category_id}}` — POST Update Category\n- `DELETE /super-admin/categories/{{category_id}}` — DELETE Category\n- `GET /super-admin/companies` — GET List Companies\n- `POST /super-admin/companies` — POST Create Company\n- `GET /super-admin/companies/{{company_id}}` — GET Show Company\n- `POST /super-admin/companies/{{company_id}}` — POST Update Company\n- `PATCH /super-admin/companies/{{company_id}}/toggle-status` — PATCH Toggle Status\n- `DELETE /super-admin/companies/{{company_id}}` — DELETE Company\n- `GET /super-admin/companies/{{company_id}}/wallet` — GET Show Wallet\n- `PATCH /super-admin/companies/{{company_id}}/wallet` — PATCH Set Balance\n- `POST /super-admin/companies/{{company_id}}/wallet/adjust` — POST Adjust Wallet\n- `GET /super-admin/companies/{{company_id}}/wallet/transactions` — GET Wallet Transactions\n- `GET /super-admin/finance/commissions/summary` — GET Commission Summary\n- `GET /super-admin/finance/withdrawal-requests` — GET Withdrawal Requests\n- `PATCH /super-admin/finance/withdrawal-requests/{{withdrawal_request_id}}/approve` — PATCH Approve Withdrawal\n- `PATCH /super-admin/finance/withdrawal-requests/{{withdrawal_request_id}}/reject` — PATCH Reject Withdrawal\n- `PATCH /super-admin/finance/withdrawal-requests/{{withdrawal_request_id}}/pay` — PATCH Pay Withdrawal\n- `GET /super-admin/suppliers` — GET List Suppliers\n- `POST /super-admin/suppliers` — POST Create Supplier\n- `GET /super-admin/suppliers/{{supplier_id}}` — GET Show Supplier\n- `POST /super-admin/suppliers/{{supplier_id}}` — POST Update Supplier\n- `DELETE /super-admin/suppliers/{{supplier_id}}` — DELETE Supplier\n- `GET /super-admin/supplier-products` — GET List Supplier Products\n- `POST /super-admin/supplier-products` — POST Create Supplier Product\n- `GET /super-admin/supplier-products/{{supplier_product_id}}` — GET Show Supplier Product\n- `POST /super-admin/supplier-products/{{supplier_product_id}}` — POST Update Supplier Product\n- `PATCH /super-admin/supplier-products/{{supplier_product_id}}/toggle-status` — PATCH Toggle Product Status\n- `DELETE /super-admin/supplier-products/{{supplier_product_id}}` — DELETE Supplier Product\n- `GET /super-admin/orders` — GET List Orders\n- `GET /super-admin/orders/{{order_id}}` — GET Show Order\n- `POST /company/login` — POST Login\n- `POST /company/logout` — POST Logout\n- `GET /company/me` — GET Me\n- `GET /company/products` — GET List Products\n- `POST /company/products` — POST Create Product\n- `GET /company/products/{{product_id}}` — GET Show Product\n- `POST /company/products/{{product_id}}` — POST Update Product\n- `DELETE /company/products/{{product_id}}` — DELETE Product\n- `GET /company/catalog/available` — GET Available Catalog\n- `GET /company/catalog/mine` — GET My Catalog\n- `POST /company/catalog/add` — POST Add to Catalog (bulk)\n- `POST /company/catalog/remove` — POST Remove from Catalog (bulk)\n- `POST /company/catalog/{{supplier_product_id}}` — POST Add Single to Catalog\n- `DELETE /company/catalog/{{supplier_product_id}}` — DELETE Remove from Catalog\n- `GET /company/wallet/transactions` — GET Wallet Transactions\n- `POST /company/wallet/withdrawals` — POST Request Withdrawal\n- `GET /company/customers` — GET List Customers\n- `GET /company/orders` — GET List Orders\n- `POST /company/orders` — POST Create Order\n- `GET /company/orders/{{order_id}}` — GET Show Order\n- `PATCH /company/orders/{{order_id}}/status` — PATCH Update Order Status\n- `POST /customer/register` — POST Register\n- `POST /customer/login` — POST Login\n- `POST /customer/logout` — POST Logout\n- `GET /customer/me` — GET Me\n- `PATCH /customer/profile` — PATCH Update Profile\n- `POST /customer/auth/check-phone` — POST Check Phone\n- `POST /customer/register/request-otp` — POST Request OTP\n- `POST /customer/register/verify` — POST Verify Registration\n- `GET /customer/orders` — GET List Orders\n- `POST /customer/orders` — POST Create Order\n- `GET /customer/orders/{{order_id}}` — GET Show Order\n- `GET /customer/maintenance-requests` — GET List Maintenance Requests\n- `POST /customer/maintenance-requests` — POST Create Maintenance Request\n- `GET /customer/maintenance-requests/{{maintenance_request_id}}` — GET Show Maintenance Request\n- `POST /customer/companies/{{company_id}}/like` — POST Like Company\n- `DELETE /customer/companies/{{company_id}}/like` — DELETE Unlike Company\n- `POST /customer/companies/{{company_id}}/rating` — POST Rate Company\n- `DELETE /customer/companies/{{company_id}}/rating` — DELETE Remove Rating\n\n\n---\n\n## سيناريوهات\n\n**طلب + عمولة:** pending → processing → completed (5% إلا referral/internal)\n\n**سحب:** request → approve → pay (أو reject + reason)\n\n**عميل:** register + company_id للربط بالشركة",
         "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
     },
     "variable": [
@@ -110,7 +110,7 @@
     "item": [
         {
             "name": "00 — Setup Flow",
-            "description": "إعداد بيئة اختبار — شغّل بالترتيب\n\nيملأ: super_admin_token, company_id, governorate_id, supplier_id, supplier_product_id, product_id, customer_id, customer_token, order_id",
+            "description": "إعداد بيئة اختبار — شغّل بالترتيب\n\nيملأ: super_admin_token, company_id, governorate_id, supplier_id, product_type_id, category_id, supplier_product_id, product_id, customer_id, customer_token, order_id",
             "item": [
                 {
                     "name": "1. Super Admin Login",
@@ -358,7 +358,109 @@
                     ]
                 },
                 {
-                    "name": "6. Create Supplier Product",
+                    "name": "6. List Product Types → save product_type_id",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {super_admin_token}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/super-admin/product-types",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "super-admin",
+                                "product-types"
+                            ],
+                            "query": null
+                        },
+                        "description": "## GET /super-admin/product-types\n\n**Auth:** Bearer {{super_admin_token}}\n\n**الخطوة 1** قبل إضافة منتج مورد: اعرض الأنواع وخزّن `product_type_id`\n\n**Seeder:** device, accessories, stages"
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "if (pm.response.code >= 200 && pm.response.code < 300) {",
+                                    "  var res = pm.response.json();",
+                                    "  var item = (res.data || []).find(function(x) { return x.name === 'device'; }); if (!item && res.data && res.data[0]) item = res.data[0];",
+                                    "  if (item && item.id) pm.collectionVariables.set(\"product_type_id\", String(item.id));",
+                                    "}"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "7. List Categories → save category_id",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {super_admin_token}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/super-admin/categories?per_page=50&product_type_id={{product_type_id}}&parent_category_id=0",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "super-admin",
+                                "categories"
+                            ],
+                            "query": [
+                                {
+                                    "key": "per_page",
+                                    "value": "50",
+                                    "disabled": false
+                                },
+                                {
+                                    "key": "product_type_id",
+                                    "value": "{{product_type_id}}",
+                                    "disabled": false
+                                },
+                                {
+                                    "key": "parent_category_id",
+                                    "value": "0",
+                                    "disabled": false
+                                }
+                            ]
+                        },
+                        "description": "## GET /super-admin/categories\n\n**Auth:** Bearer {{super_admin_token}}\n\n**الخطوة 2** قبل إضافة منتج مورد: فلتر بـ `product_type_id` وخزّن `category_id`\n\n**Query:** product_type_id, parent_category_id (0=جذر), search, per_page\n\n**Seeder:** RO devices, cartridge, اصلاح, stage one…"
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "if (pm.response.code >= 200 && pm.response.code < 300) {",
+                                    "  var res = pm.response.json();",
+                                    "  var item = (res.data || []).find(function(x) { return x.name === 'RO devices'; }); if (!item && res.data && res.data[0]) item = res.data[0];",
+                                    "  if (item && item.id) pm.collectionVariables.set(\"category_id\", String(item.id));",
+                                    "}"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "8. Create Supplier Product (with category_id)",
                     "request": {
                         "method": "POST",
                         "header": [
@@ -386,10 +488,10 @@
                             ],
                             "query": null
                         },
-                        "description": "## POST /super-admin/supplier-products\n\n**Body:** name, cash_price, supplier_id, installment_plans[]",
+                        "description": "## POST /super-admin/supplier-products\n\n**Auth:** Bearer {{super_admin_token}}\n\n### مسار الإدخال (Admin UI)\n1. `GET /super-admin/product-types` → اختر نوع (`device` | `accessories` | `stages`)\n2. `GET /super-admin/categories?product_type_id=` → اختر قسم (`category_id`)\n3. أرسل هذا الطلب مع `category_id`\n\n### Body\n| Field | مطلوب | الوصف |\n|-------|--------|--------|\n| name | ✓ | اسم المنتج |\n| cash_price | ✓ | سعر الكاش |\n| supplier_id | ✓ | المورد |\n| category_id | ○ | القسم (من الخطوتين أعلاه) |\n| is_active | ○ | true/false |\n| installment_plans[] | ○ | months, down_payment, installment_amount |\n\n**Response:** `data.category` يعرض القسم والنوع المرتبط",
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n  \"name\": \"فلتر\",\n  \"cash_price\": 5000,\n  \"supplier_id\": {{supplier_id}},\n  \"is_active\": true,\n  \"installment_plans\": [{ \"months\": 6, \"down_payment\": 500, \"installment_amount\": 800 }]\n}",
+                            "raw": "{\n  \"name\": \"فلتر RO\",\n  \"cash_price\": 5000,\n  \"supplier_id\": {{supplier_id}},\n  \"category_id\": {{category_id}},\n  \"is_active\": true,\n  \"installment_plans\": [{ \"months\": 6, \"down_payment\": 500, \"installment_amount\": 800 }]\n}",
                             "options": {
                                 "raw": {
                                     "language": "json"
@@ -414,7 +516,7 @@
                     ]
                 },
                 {
-                    "name": "7. Company Login",
+                    "name": "9. Company Login",
                     "request": {
                         "method": "POST",
                         "header": [
@@ -463,7 +565,7 @@
                     ]
                 },
                 {
-                    "name": "8. Add to Catalog",
+                    "name": "10. Add to Catalog",
                     "request": {
                         "method": "POST",
                         "header": [
@@ -505,7 +607,7 @@
                     }
                 },
                 {
-                    "name": "9. Create Company Product",
+                    "name": "11. Create Company Product",
                     "request": {
                         "method": "POST",
                         "header": [
@@ -533,10 +635,10 @@
                             ],
                             "query": null
                         },
-                        "description": "## POST /company/products\n\n**Body:** name, cash_price, is_active, installment_plans[] (optional), description, image",
+                        "description": "## POST /company/products\n\n**Body:** name, cash_price, category_id (اختياري — نفس أقسام الأدمن), is_active, installment_plans[], description, image\n\n**ملاحظة:** منتجات الكatalog من المورد ترث category من supplier_product",
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n  \"name\": \"منتج\",\n  \"cash_price\": 1500,\n  \"is_active\": true,\n  \"installment_plans\": [{ \"months\": 6, \"down_payment\": 300, \"installment_amount\": 250 }]\n}",
+                            "raw": "{\n  \"name\": \"منتج\",\n  \"cash_price\": 1500,\n  \"category_id\": {{category_id}},\n  \"is_active\": true,\n  \"installment_plans\": [{ \"months\": 6, \"down_payment\": 300, \"installment_amount\": 250 }]\n}",
                             "options": {
                                 "raw": {
                                     "language": "json"
@@ -561,7 +663,7 @@
                     ]
                 },
                 {
-                    "name": "10. Register Customer",
+                    "name": "12. Register Customer",
                     "request": {
                         "method": "POST",
                         "header": [
@@ -623,7 +725,7 @@
                     ]
                 },
                 {
-                    "name": "11. Company Create Order",
+                    "name": "13. Company Create Order",
                     "request": {
                         "method": "POST",
                         "header": [
@@ -651,7 +753,7 @@
                             ],
                             "query": null
                         },
-                        "description": "## POST /company/orders\n\n**Body:** customer_id, payment_type (cash|installment), items[], discount, notes, source, idempotency_key\n\n**cash:** بدون installment_plan\n\n**installment:** منتج واحد + installment_plan { months, down_payment, installment_amount } من خطط المنتج\n\n**source.channel:** ad | referral | link | direct",
+                        "description": "## POST /company/orders\n\n**Auth:** Bearer {{company_token}}\n\n### كاش (cash)\n```json\n{\n  \"customer_id\": 1,\n  \"payment_type\": \"cash\",\n  \"items\": [{ \"company_product_id\": 1, \"quantity\": 1 }],\n  \"source\": { \"channel\": \"direct\" },\n  \"idempotency_key\": \"co-cash-001\"\n}\n```\n\n### تقسيط (installment)\n- **منتج واحد فقط** في `items`\n- `installment_plan` يجب أن **يطابق** خطة معرّفة على المنتج (من GET installment-plans)\n- `total_amount` = مقدم + (أقساط × عدد الأشهر)\n\n```json\n{\n  \"customer_id\": 1,\n  \"payment_type\": \"installment\",\n  \"installment_plan\": {\n    \"months\": 6,\n    \"down_payment\": 300,\n    \"installment_amount\": 250\n  },\n  \"items\": [{ \"company_product_id\": 1, \"quantity\": 1 }],\n  \"source\": { \"channel\": \"direct\" },\n  \"idempotency_key\": \"co-installment-001\"\n}\n```\n\n**Response:** `payment_type`, `installment_plan` (مع remaining_amount و total_amount), `total_amount`",
                         "body": {
                             "mode": "raw",
                             "raw": "{\n  \"customer_id\": {{customer_id}},\n  \"payment_type\": \"cash\",\n  \"items\": [{ \"company_product_id\": {{product_id}}, \"quantity\": 1 }],\n  \"source\": { \"channel\": \"direct\" },\n  \"idempotency_key\": \"co-001\"\n}",
@@ -681,7 +783,440 @@
             ]
         },
         {
-            "name": "01 — Withdrawal Flow",
+            "name": "01 — Product Catalog Flow",
+            "description": "سيناريو الأنواع والأقسام عند إضافة منتجات الموردين\n\nشغّل بعد migrate --seed\n\nيملأ: product_type_id, category_id, supplier_product_id",
+            "item": [
+                {
+                    "name": "1. Super Admin Login",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/super-admin/login",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "super-admin",
+                                "login"
+                            ],
+                            "query": null
+                        },
+                        "description": "## POST /super-admin/login\n\n**Body:** email, password\n\n**Response 200:** `{ token, admin }`",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"email\": \"admin@watafl.com\",\n  \"password\": \"Admin@1234\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "var res = pm.response.json();",
+                                    "if (res.token) pm.collectionVariables.set(\"super_admin_token\", res.token);"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "2. List Product Types",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {super_admin_token}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/super-admin/product-types",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "super-admin",
+                                "product-types"
+                            ],
+                            "query": null
+                        },
+                        "description": "## GET /super-admin/product-types\n\n**Auth:** Bearer {{super_admin_token}}\n\n**الخطوة 1** قبل إضافة منتج مورد: اعرض الأنواع وخزّن `product_type_id`\n\n**Seeder:** device, accessories, stages"
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "if (pm.response.code >= 200 && pm.response.code < 300) {",
+                                    "  var res = pm.response.json();",
+                                    "  var item = (res.data || []).find(function(x) { return x.name === 'device'; }); if (!item && res.data && res.data[0]) item = res.data[0];",
+                                    "  if (item && item.id) pm.collectionVariables.set(\"product_type_id\", String(item.id));",
+                                    "}"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "3. List Categories (by type)",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {super_admin_token}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/super-admin/categories?per_page=50&product_type_id={{product_type_id}}&parent_category_id=0",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "super-admin",
+                                "categories"
+                            ],
+                            "query": [
+                                {
+                                    "key": "per_page",
+                                    "value": "50",
+                                    "disabled": false
+                                },
+                                {
+                                    "key": "product_type_id",
+                                    "value": "{{product_type_id}}",
+                                    "disabled": false
+                                },
+                                {
+                                    "key": "parent_category_id",
+                                    "value": "0",
+                                    "disabled": false
+                                }
+                            ]
+                        },
+                        "description": "## GET /super-admin/categories\n\n**Auth:** Bearer {{super_admin_token}}\n\n**الخطوة 2** قبل إضافة منتج مورد: فلتر بـ `product_type_id` وخزّن `category_id`\n\n**Query:** product_type_id, parent_category_id (0=جذر), search, per_page\n\n**Seeder:** RO devices, cartridge, اصلاح, stage one…"
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "if (pm.response.code >= 200 && pm.response.code < 300) {",
+                                    "  var res = pm.response.json();",
+                                    "  var item = (res.data || []).find(function(x) { return x.name === 'RO devices'; }); if (!item && res.data && res.data[0]) item = res.data[0];",
+                                    "  if (item && item.id) pm.collectionVariables.set(\"category_id\", String(item.id));",
+                                    "}"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "4. Create Supplier (if needed)",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {super_admin_token}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/super-admin/suppliers",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "super-admin",
+                                "suppliers"
+                            ],
+                            "query": null
+                        },
+                        "description": "## POST /super-admin/suppliers\n\n**Body:** name, phone, email, address",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"name\": \"مورد\",\n  \"phone\": \"01000000000\",\n  \"email\": \"s@test.com\",\n  \"address\": \"القاهرة\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "if (pm.response.code >= 200 && pm.response.code < 300) {",
+                                    "  var res = pm.response.json();",
+                                    "  if (res.data && res.data.id) pm.collectionVariables.set(\"supplier_id\", String(res.data.id));",
+                                    "  if (res.customer && res.customer.id) pm.collectionVariables.set(\"supplier_id\", String(res.customer.id));",
+                                    "}"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "5. Create Supplier Product",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {super_admin_token}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/super-admin/supplier-products",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "super-admin",
+                                "supplier-products"
+                            ],
+                            "query": null
+                        },
+                        "description": "## POST /super-admin/supplier-products\n\n**Auth:** Bearer {{super_admin_token}}\n\n### مسار الإدخال (Admin UI)\n1. `GET /super-admin/product-types` → اختر نوع (`device` | `accessories` | `stages`)\n2. `GET /super-admin/categories?product_type_id=` → اختر قسم (`category_id`)\n3. أرسل هذا الطلب مع `category_id`\n\n### Body\n| Field | مطلوب | الوصف |\n|-------|--------|--------|\n| name | ✓ | اسم المنتج |\n| cash_price | ✓ | سعر الكاش |\n| supplier_id | ✓ | المورد |\n| category_id | ○ | القسم (من الخطوتين أعلاه) |\n| is_active | ○ | true/false |\n| installment_plans[] | ○ | months, down_payment, installment_amount |\n\n**Response:** `data.category` يعرض القسم والنوع المرتبط",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"name\": \"فلتر RO\",\n  \"cash_price\": 5000,\n  \"supplier_id\": {{supplier_id}},\n  \"category_id\": {{category_id}},\n  \"is_active\": true,\n  \"installment_plans\": [{ \"months\": 6, \"down_payment\": 500, \"installment_amount\": 800 }]\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "if (pm.response.code >= 200 && pm.response.code < 300) {",
+                                    "  var res = pm.response.json();",
+                                    "  if (res.data && res.data.id) pm.collectionVariables.set(\"supplier_product_id\", String(res.data.id));",
+                                    "  if (res.customer && res.customer.id) pm.collectionVariables.set(\"supplier_product_id\", String(res.customer.id));",
+                                    "}"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "6. Verify Supplier Product",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {super_admin_token}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/super-admin/supplier-products/{{supplier_product_id}}",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "super-admin",
+                                "supplier-products",
+                                "{{supplier_product_id}}"
+                            ],
+                            "query": null
+                        },
+                        "description": "## GET /super-admin/supplier-products/{supplierProduct}\n\n**Response:** supplier + category (مع product_type) + installment_plans"
+                    }
+                },
+                {
+                    "name": "7. Filter by category_id",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {super_admin_token}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/super-admin/supplier-products?supplier_id={{supplier_id}}&category_id={{category_id}}",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "super-admin",
+                                "supplier-products"
+                            ],
+                            "query": [
+                                {
+                                    "key": "supplier_id",
+                                    "value": "{{supplier_id}}",
+                                    "disabled": false
+                                },
+                                {
+                                    "key": "category_id",
+                                    "value": "{{category_id}}",
+                                    "disabled": false
+                                }
+                            ]
+                        },
+                        "description": "## GET /super-admin/supplier-products\n\n**Query:** supplier_id, is_active, category_id, product_type_id\n\n**Response:** كل منتج يتضمن `category` مع `product_type`"
+                    }
+                },
+                {
+                    "name": "8. Public Product Types",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/public/product-types",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "public",
+                                "product-types"
+                            ],
+                            "query": null
+                        },
+                        "description": "## GET /public/product-types\n\n**Auth:** لا\n\n**Response:** قائمة الأنواع (device | accessories | stages)\n\n**استخدمها:** اختر `product_type_id` ثم اطلب الأقسام المناسبة"
+                    }
+                },
+                {
+                    "name": "9. Public Categories",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/public/categories?product_type_id={{product_type_id}}&parent_category_id=0",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "public",
+                                "categories"
+                            ],
+                            "query": [
+                                {
+                                    "key": "product_type_id",
+                                    "value": "{{product_type_id}}",
+                                    "disabled": false
+                                },
+                                {
+                                    "key": "parent_category_id",
+                                    "value": "0",
+                                    "disabled": false
+                                }
+                            ]
+                        },
+                        "description": "## GET /public/categories\n\n**Auth:** لا\n\n**Query:**\n| Param | الوصف |\n|-------|--------|\n| product_type_id | نوع المنتج (مطلوب للفلترة) |\n| parent_category_id | 0 = أقسام جذر فقط |\n| number_of_stages | لأقسام المراحل (1–8) |\n\n**استخدمها:** اختر `category_id` لعرض منتجات المتجر"
+                    }
+                },
+                {
+                    "name": "10. Store Products by category",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/public/companies/{{company_id}}/products?page=1&category_id={{category_id}}",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "public",
+                                "companies",
+                                "{{company_id}}",
+                                "products"
+                            ],
+                            "query": [
+                                {
+                                    "key": "page",
+                                    "value": "1",
+                                    "disabled": false
+                                },
+                                {
+                                    "key": "category_id",
+                                    "value": "{{category_id}}",
+                                    "disabled": false
+                                }
+                            ]
+                        },
+                        "description": "## GET /public/companies/{company}/products\n\n**Auth:** لا\n\n**Query:** page, category_id, product_type_id, number_of_stages\n\n**Response:** منتجات + category + installment_plans"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "02 — Withdrawal Flow",
             "description": "سيناريو سحب كامل",
             "item": [
                 {
@@ -1000,7 +1535,7 @@
             ]
         },
         {
-            "name": "02 — Customer Flow",
+            "name": "03 — Customer Flow",
             "description": "تسجيل عميل + ملف + عملاء الشركة",
             "item": [
                 {
@@ -1230,8 +1765,8 @@
             ]
         },
         {
-            "name": "03 — Order Flow",
-            "description": "طلب → processing → completed + عمولة",
+            "name": "04 — Order Flow (Cash)",
+            "description": "طلب كاش → processing → completed + عمولة",
             "item": [
                 {
                     "name": "1. Company Login",
@@ -1283,7 +1818,7 @@
                     ]
                 },
                 {
-                    "name": "2. Create Order",
+                    "name": "2. Create Cash Order",
                     "request": {
                         "method": "POST",
                         "header": [
@@ -1311,7 +1846,7 @@
                             ],
                             "query": null
                         },
-                        "description": "## POST /company/orders\n\n**Body:** customer_id, payment_type (cash|installment), items[], discount, notes, source, idempotency_key\n\n**cash:** بدون installment_plan\n\n**installment:** منتج واحد + installment_plan { months, down_payment, installment_amount } من خطط المنتج\n\n**source.channel:** ad | referral | link | direct",
+                        "description": "## POST /company/orders\n\n**Auth:** Bearer {{company_token}}\n\n### كاش (cash)\n```json\n{\n  \"customer_id\": 1,\n  \"payment_type\": \"cash\",\n  \"items\": [{ \"company_product_id\": 1, \"quantity\": 1 }],\n  \"source\": { \"channel\": \"direct\" },\n  \"idempotency_key\": \"co-cash-001\"\n}\n```\n\n### تقسيط (installment)\n- **منتج واحد فقط** في `items`\n- `installment_plan` يجب أن **يطابق** خطة معرّفة على المنتج (من GET installment-plans)\n- `total_amount` = مقدم + (أقساط × عدد الأشهر)\n\n```json\n{\n  \"customer_id\": 1,\n  \"payment_type\": \"installment\",\n  \"installment_plan\": {\n    \"months\": 6,\n    \"down_payment\": 300,\n    \"installment_amount\": 250\n  },\n  \"items\": [{ \"company_product_id\": 1, \"quantity\": 1 }],\n  \"source\": { \"channel\": \"direct\" },\n  \"idempotency_key\": \"co-installment-001\"\n}\n```\n\n**Response:** `payment_type`, `installment_plan` (مع remaining_amount و total_amount), `total_amount`",
                         "body": {
                             "mode": "raw",
                             "raw": "{\n  \"customer_id\": {{customer_id}},\n  \"payment_type\": \"cash\",\n  \"items\": [{ \"company_product_id\": {{product_id}}, \"quantity\": 1 }],\n  \"source\": { \"channel\": \"direct\" },\n  \"idempotency_key\": \"co-001\"\n}",
@@ -1495,11 +2030,386 @@
             ]
         },
         {
-            "name": "04 — Public Store Flow",
-            "description": "تصفح بدون تسجيل",
+            "name": "05 — Installment Order Flow",
+            "description": "طلب بالتقسيط — شغّل **00 Setup Flow** أولاً\n\nالمنتج في Setup فيه خطة: 6 أشهر، مقدم 300، قسط 250\n\nيملأ: order_id",
             "item": [
                 {
-                    "name": "1. Governorates",
+                    "name": "1. Get Installment Plans (Public)",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/public/companies/{{company_id}}/products/{{product_id}}/installment-plans",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "public",
+                                "companies",
+                                "{{company_id}}",
+                                "products",
+                                "{{product_id}}",
+                                "installment-plans"
+                            ],
+                            "query": null
+                        },
+                        "description": "## GET /public/companies/{company}/products/{companyProduct}/installment-plans\n\n**Auth:** لا\n\n**الخطوة 1** قبل زر «قسّط من هنا» — يعرض خطط المنتج مع حسابات جاهزة:\n\n```json\n{\n  \"data\": {\n    \"product\": { \"id\": 1, \"name\": \"...\", \"cash_price\": 1500, \"has_installment\": true },\n    \"plans\": [\n      {\n        \"months\": 6,\n        \"down_payment\": 300,\n        \"installment_amount\": 250,\n        \"remaining_amount\": 1500,\n        \"total_amount\": 1800\n      }\n    ]\n  }\n}\n```\n\n**استخدم:** انسخ `months`, `down_payment`, `installment_amount` كما هي في `installment_plan` عند إنشاء الطلب"
+                    }
+                },
+                {
+                    "name": "2. Customer Login",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/customer/login",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "customer",
+                                "login"
+                            ],
+                            "query": null
+                        },
+                        "description": "## POST /customer/login\n\n**Body:** phone, password",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"phone\": \"{{customer_phone}}\",\n  \"password\": \"{{customer_password}}\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "var res = pm.response.json();",
+                                    "if (res.token) pm.collectionVariables.set(\"customer_token\", res.token);"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "3. Customer Installment Order",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {customer_token}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/customer/orders",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "customer",
+                                "orders"
+                            ],
+                            "query": null
+                        },
+                        "description": "## POST /customer/orders\n\n**Auth:** Bearer {{customer_token}} — يتطلب ربط active مع الشركة\n\n### كاش\n```json\n{\n  \"company_id\": 1,\n  \"payment_type\": \"cash\",\n  \"items\": [{ \"company_product_id\": 1, \"quantity\": 1 }],\n  \"source\": { \"channel\": \"link\" },\n  \"idempotency_key\": \"cu-cash-001\"\n}\n```\n\n### تقسيط\n1. `GET /public/companies/{id}/products/{id}/installment-plans`\n2. اختر خطة وانسخ القيم الثلاث\n3. أرسل طلباً بمنتج **واحد** + `payment_type: installment`\n\n```json\n{\n  \"company_id\": 1,\n  \"payment_type\": \"installment\",\n  \"installment_plan\": {\n    \"months\": 6,\n    \"down_payment\": 300,\n    \"installment_amount\": 250\n  },\n  \"items\": [{ \"company_product_id\": 1, \"quantity\": 1 }],\n  \"source\": { \"channel\": \"link\" },\n  \"idempotency_key\": \"cu-installment-001\"\n}\n```\n\n**أخطاء شائعة:** خطة غير موجودة على المنتج → 422 على `installment_plan` | أكثر من منتج → 422 على `items`",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"company_id\": {{company_id}},\n  \"payment_type\": \"installment\",\n  \"installment_plan\": {\n    \"months\": 6,\n    \"down_payment\": 300,\n    \"installment_amount\": 250\n  },\n  \"items\": [{ \"company_product_id\": {{product_id}}, \"quantity\": 1 }],\n  \"source\": { \"channel\": \"link\" },\n  \"idempotency_key\": \"cu-installment-001\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "if (pm.response.code >= 200 && pm.response.code < 300) {",
+                                    "  var res = pm.response.json();",
+                                    "  if (res.data && res.data.id) pm.collectionVariables.set(\"order_id\", String(res.data.id));",
+                                    "  if (res.customer && res.customer.id) pm.collectionVariables.set(\"order_id\", String(res.customer.id));",
+                                    "}"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "4. Show Installment Order",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {customer_token}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/customer/orders/{{order_id}}",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "customer",
+                                "orders",
+                                "{{order_id}}"
+                            ],
+                            "query": null
+                        },
+                        "description": "## GET /customer/orders/{order}"
+                    }
+                },
+                {
+                    "name": "5. Company Login",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/company/login",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "company",
+                                "login"
+                            ],
+                            "query": null
+                        },
+                        "description": "## POST /company/login\n\n**Body:** tax_number, password\n\n**Response:** `{ token, company }`",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"tax_number\": \"{{company_tax_number}}\",\n  \"password\": \"{{company_password}}\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "var res = pm.response.json();",
+                                    "if (res.token) pm.collectionVariables.set(\"company_token\", res.token);"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "6. Company Installment Order",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {company_token}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/company/orders",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "company",
+                                "orders"
+                            ],
+                            "query": null
+                        },
+                        "description": "## POST /company/orders\n\n**Auth:** Bearer {{company_token}}\n\n### كاش (cash)\n```json\n{\n  \"customer_id\": 1,\n  \"payment_type\": \"cash\",\n  \"items\": [{ \"company_product_id\": 1, \"quantity\": 1 }],\n  \"source\": { \"channel\": \"direct\" },\n  \"idempotency_key\": \"co-cash-001\"\n}\n```\n\n### تقسيط (installment)\n- **منتج واحد فقط** في `items`\n- `installment_plan` يجب أن **يطابق** خطة معرّفة على المنتج (من GET installment-plans)\n- `total_amount` = مقدم + (أقساط × عدد الأشهر)\n\n```json\n{\n  \"customer_id\": 1,\n  \"payment_type\": \"installment\",\n  \"installment_plan\": {\n    \"months\": 6,\n    \"down_payment\": 300,\n    \"installment_amount\": 250\n  },\n  \"items\": [{ \"company_product_id\": 1, \"quantity\": 1 }],\n  \"source\": { \"channel\": \"direct\" },\n  \"idempotency_key\": \"co-installment-001\"\n}\n```\n\n**Response:** `payment_type`, `installment_plan` (مع remaining_amount و total_amount), `total_amount`",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"customer_id\": {{customer_id}},\n  \"payment_type\": \"installment\",\n  \"installment_plan\": {\n    \"months\": 6,\n    \"down_payment\": 300,\n    \"installment_amount\": 250\n  },\n  \"items\": [{ \"company_product_id\": {{product_id}}, \"quantity\": 1 }],\n  \"source\": { \"channel\": \"direct\" },\n  \"idempotency_key\": \"co-installment-001\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "if (pm.response.code >= 200 && pm.response.code < 300) {",
+                                    "  var res = pm.response.json();",
+                                    "  if (res.data && res.data.id) pm.collectionVariables.set(\"order_id\", String(res.data.id));",
+                                    "  if (res.customer && res.customer.id) pm.collectionVariables.set(\"order_id\", String(res.customer.id));",
+                                    "}"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "7. Complete Installment Order",
+                    "request": {
+                        "method": "PATCH",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {company_token}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/company/orders/{{order_id}}/status",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "company",
+                                "orders",
+                                "{{order_id}}",
+                                "status"
+                            ],
+                            "query": null
+                        },
+                        "description": "## PATCH /company/orders/{order}/status\n\n**Body:** status (processing|completed|cancelled), note, cancellation_reason (required if cancelled)\n\n**completed** → CommissionService (5%)",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"status\": \"completed\",\n  \"note\": \"تم التسليم\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "06 — Public Store Flow",
+            "description": "تصفح بدون تسجيل — يشمل فلترة بالأقسام وخطط التقسيط",
+            "item": [
+                {
+                    "name": "1. Product Types",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/public/product-types",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "public",
+                                "product-types"
+                            ],
+                            "query": null
+                        },
+                        "description": "## GET /public/product-types\n\n**Auth:** لا\n\n**Response:** قائمة الأنواع (device | accessories | stages)\n\n**استخدمها:** اختر `product_type_id` ثم اطلب الأقسام المناسبة"
+                    }
+                },
+                {
+                    "name": "2. Categories",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/public/categories?product_type_id={{product_type_id}}&parent_category_id=0",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "public",
+                                "categories"
+                            ],
+                            "query": [
+                                {
+                                    "key": "product_type_id",
+                                    "value": "{{product_type_id}}",
+                                    "disabled": false
+                                },
+                                {
+                                    "key": "parent_category_id",
+                                    "value": "0",
+                                    "disabled": false
+                                }
+                            ]
+                        },
+                        "description": "## GET /public/categories\n\n**Auth:** لا\n\n**Query:**\n| Param | الوصف |\n|-------|--------|\n| product_type_id | نوع المنتج (مطلوب للفلترة) |\n| parent_category_id | 0 = أقسام جذر فقط |\n| number_of_stages | لأقسام المراحل (1–8) |\n\n**استخدمها:** اختر `category_id` لعرض منتجات المتجر"
+                    }
+                },
+                {
+                    "name": "3. Governorates",
                     "request": {
                         "method": "GET",
                         "header": [
@@ -1523,7 +2433,7 @@
                     }
                 },
                 {
-                    "name": "2. Maintenance Lookups",
+                    "name": "4. Maintenance Lookups",
                     "request": {
                         "method": "GET",
                         "header": [
@@ -1548,7 +2458,7 @@
                     }
                 },
                 {
-                    "name": "3. Companies",
+                    "name": "5. Companies",
                     "request": {
                         "method": "GET",
                         "header": [
@@ -1578,7 +2488,7 @@
                     }
                 },
                 {
-                    "name": "4. Company Details",
+                    "name": "6. Company Details",
                     "request": {
                         "method": "GET",
                         "header": [
@@ -1603,7 +2513,7 @@
                     }
                 },
                 {
-                    "name": "5. Store Products",
+                    "name": "7. Store Products",
                     "request": {
                         "method": "GET",
                         "header": [
@@ -1645,7 +2555,7 @@
                     }
                 },
                 {
-                    "name": "6. Product Installment Plans",
+                    "name": "8. Product Installment Plans",
                     "request": {
                         "method": "GET",
                         "header": [
@@ -1669,7 +2579,7 @@
                             ],
                             "query": null
                         },
-                        "description": "## GET /public/companies/{company}/products/{companyProduct}/installment-plans\n\n**Auth:** لا\n\n**Response:** cash_price + plans[] مع remaining_amount و total_amount\n\nاستخدم قبل زر \"قسط من هنا\""
+                        "description": "## GET /public/companies/{company}/products/{companyProduct}/installment-plans\n\n**Auth:** لا\n\n**الخطوة 1** قبل زر «قسّط من هنا» — يعرض خطط المنتج مع حسابات جاهزة:\n\n```json\n{\n  \"data\": {\n    \"product\": { \"id\": 1, \"name\": \"...\", \"cash_price\": 1500, \"has_installment\": true },\n    \"plans\": [\n      {\n        \"months\": 6,\n        \"down_payment\": 300,\n        \"installment_amount\": 250,\n        \"remaining_amount\": 1500,\n        \"total_amount\": 1800\n      }\n    ]\n  }\n}\n```\n\n**استخدم:** انسخ `months`, `down_payment`, `installment_amount` كما هي في `installment_plan` عند إنشاء الطلب"
                     }
                 }
             ]
@@ -1727,7 +2637,7 @@
                                     ],
                                     "query": null
                                 },
-                                "description": "## GET /public/product-types\n\n**Auth:** لا\n\n**Response:** device | accessories | stages للفلترة"
+                                "description": "## GET /public/product-types\n\n**Auth:** لا\n\n**Response:** قائمة الأنواع (device | accessories | stages)\n\n**استخدمها:** اختر `product_type_id` ثم اطلب الأقسام المناسبة"
                             }
                         },
                         {
@@ -1762,7 +2672,7 @@
                                         }
                                     ]
                                 },
-                                "description": "## GET /public/categories\n\n**Auth:** لا\n\n**Query:** product_type_id, parent_category_id (0=جذر), number_of_stages"
+                                "description": "## GET /public/categories\n\n**Auth:** لا\n\n**Query:**\n| Param | الوصف |\n|-------|--------|\n| product_type_id | نوع المنتج (مطلوب للفلترة) |\n| parent_category_id | 0 = أقسام جذر فقط |\n| number_of_stages | لأقسام المراحل (1–8) |\n\n**استخدمها:** اختر `category_id` لعرض منتجات المتجر"
                             }
                         },
                         {
@@ -1912,7 +2822,7 @@
                                     ],
                                     "query": null
                                 },
-                                "description": "## GET /public/companies/{company}/products/{companyProduct}/installment-plans\n\n**Auth:** لا\n\n**Response:** cash_price + plans[] مع remaining_amount و total_amount\n\nاستخدم قبل زر \"قسط من هنا\""
+                                "description": "## GET /public/companies/{company}/products/{companyProduct}/installment-plans\n\n**Auth:** لا\n\n**الخطوة 1** قبل زر «قسّط من هنا» — يعرض خطط المنتج مع حسابات جاهزة:\n\n```json\n{\n  \"data\": {\n    \"product\": { \"id\": 1, \"name\": \"...\", \"cash_price\": 1500, \"has_installment\": true },\n    \"plans\": [\n      {\n        \"months\": 6,\n        \"down_payment\": 300,\n        \"installment_amount\": 250,\n        \"remaining_amount\": 1500,\n        \"total_amount\": 1800\n      }\n    ]\n  }\n}\n```\n\n**استخدم:** انسخ `months`, `down_payment`, `installment_amount` كما هي في `installment_plan` عند إنشاء الطلب"
                             }
                         }
                     ]
@@ -2064,7 +2974,7 @@
                 },
                 {
                     "name": "Super Admin — Product Types (5)",
-                    "description": "",
+                    "description": "أنواع المنتج — الخطوة 1 قبل إضافة منتج مورد",
                     "item": [
                         {
                             "name": "GET List Product Types",
@@ -2091,8 +3001,23 @@
                                     ],
                                     "query": null
                                 },
-                                "description": "## GET /super-admin/product-types\n\n**Auth:** Bearer {{super_admin_token}}"
-                            }
+                                "description": "## GET /super-admin/product-types\n\n**Auth:** Bearer {{super_admin_token}}\n\n**الخطوة 1** قبل إضافة منتج مورد: اعرض الأنواع وخزّن `product_type_id`\n\n**Seeder:** device, accessories, stages"
+                            },
+                            "event": [
+                                {
+                                    "listen": "test",
+                                    "script": {
+                                        "type": "text/javascript",
+                                        "exec": [
+                                            "if (pm.response.code >= 200 && pm.response.code < 300) {",
+                                            "  var res = pm.response.json();",
+                                            "  var item = (res.data || []).find(function(x) { return x.name === 'device'; }); if (!item && res.data && res.data[0]) item = res.data[0];",
+                                            "  if (item && item.id) pm.collectionVariables.set(\"product_type_id\", String(item.id));",
+                                            "}"
+                                        ]
+                                    }
+                                }
+                            ]
                         },
                         {
                             "name": "POST Create Product Type",
@@ -2123,7 +3048,7 @@
                                     ],
                                     "query": null
                                 },
-                                "description": "## POST /super-admin/product-types\n\n**Body:** name (unique slug), name_ar",
+                                "description": "## POST /super-admin/product-types\n\n**Body:** name (slug فريد), name_ar\n\n**مثال:** device → فلتر مياه",
                                 "body": {
                                     "mode": "raw",
                                     "raw": "{\n  \"name\": \"device\",\n  \"name_ar\": \"فلتر مياه\"\n}",
@@ -2254,7 +3179,7 @@
                 },
                 {
                     "name": "Super Admin — Categories (5)",
-                    "description": "",
+                    "description": "أقسام المنتج — الخطوة 2 (category_id)",
                     "item": [
                         {
                             "name": "GET List Categories",
@@ -2271,7 +3196,7 @@
                                     }
                                 ],
                                 "url": {
-                                    "raw": "{{base_url}}/super-admin/categories?per_page=50&product_type_id={{product_type_id}}",
+                                    "raw": "{{base_url}}/super-admin/categories?per_page=50&product_type_id={{product_type_id}}&parent_category_id=0",
                                     "host": [
                                         "{{base_url}}"
                                     ],
@@ -2289,11 +3214,31 @@
                                             "key": "product_type_id",
                                             "value": "{{product_type_id}}",
                                             "disabled": false
+                                        },
+                                        {
+                                            "key": "parent_category_id",
+                                            "value": "0",
+                                            "disabled": false
                                         }
                                     ]
                                 },
-                                "description": "## GET /super-admin/categories\n\n**Query:** product_type_id, parent_category_id (0=جذر), search, per_page"
-                            }
+                                "description": "## GET /super-admin/categories\n\n**Auth:** Bearer {{super_admin_token}}\n\n**الخطوة 2** قبل إضافة منتج مورد: فلتر بـ `product_type_id` وخزّن `category_id`\n\n**Query:** product_type_id, parent_category_id (0=جذر), search, per_page\n\n**Seeder:** RO devices, cartridge, اصلاح, stage one…"
+                            },
+                            "event": [
+                                {
+                                    "listen": "test",
+                                    "script": {
+                                        "type": "text/javascript",
+                                        "exec": [
+                                            "if (pm.response.code >= 200 && pm.response.code < 300) {",
+                                            "  var res = pm.response.json();",
+                                            "  var item = (res.data || []).find(function(x) { return x.name === 'RO devices'; }); if (!item && res.data && res.data[0]) item = res.data[0];",
+                                            "  if (item && item.id) pm.collectionVariables.set(\"category_id\", String(item.id));",
+                                            "}"
+                                        ]
+                                    }
+                                }
+                            ]
                         },
                         {
                             "name": "POST Create Category",
@@ -2324,7 +3269,7 @@
                                     ],
                                     "query": null
                                 },
-                                "description": "## POST /super-admin/categories\n\n**Body:** name, parent_category_id (0=جذر), product_type_id, number_of_stages",
+                                "description": "## POST /super-admin/categories\n\n**Body:**\n| Field | الوصف |\n|-------|--------|\n| name | اسم القسم |\n| product_type_id | نوع المنتج |\n| parent_category_id | 0 = قسم جذر |\n| number_of_stages | للمراحل الفرعية (1–8) أو 0 |",
                                 "body": {
                                     "mode": "raw",
                                     "raw": "{\n  \"name\": \"RO devices\",\n  \"parent_category_id\": 0,\n  \"product_type_id\": {{product_type_id}},\n  \"number_of_stages\": 0\n}",
@@ -3245,7 +4190,7 @@
                 },
                 {
                     "name": "Super Admin — Supplier Products (6)",
-                    "description": "",
+                    "description": "منتجات المورد — أرسل category_id من الأقسام",
                     "item": [
                         {
                             "name": "GET List Supplier Products",
@@ -3275,10 +4220,20 @@
                                             "key": "supplier_id",
                                             "value": "{{supplier_id}}",
                                             "disabled": false
+                                        },
+                                        {
+                                            "key": "category_id",
+                                            "value": "{{category_id}}",
+                                            "disabled": true
+                                        },
+                                        {
+                                            "key": "product_type_id",
+                                            "value": "{{product_type_id}}",
+                                            "disabled": true
                                         }
                                     ]
                                 },
-                                "description": "## GET /super-admin/supplier-products\n\n**Query:** supplier_id, is_active"
+                                "description": "## GET /super-admin/supplier-products\n\n**Query:** supplier_id, is_active, category_id, product_type_id\n\n**Response:** كل منتج يتضمن `category` مع `product_type`"
                             }
                         },
                         {
@@ -3310,10 +4265,10 @@
                                     ],
                                     "query": null
                                 },
-                                "description": "## POST /super-admin/supplier-products\n\n**Body:** name, cash_price, supplier_id, installment_plans[]",
+                                "description": "## POST /super-admin/supplier-products\n\n**Auth:** Bearer {{super_admin_token}}\n\n### مسار الإدخال (Admin UI)\n1. `GET /super-admin/product-types` → اختر نوع (`device` | `accessories` | `stages`)\n2. `GET /super-admin/categories?product_type_id=` → اختر قسم (`category_id`)\n3. أرسل هذا الطلب مع `category_id`\n\n### Body\n| Field | مطلوب | الوصف |\n|-------|--------|--------|\n| name | ✓ | اسم المنتج |\n| cash_price | ✓ | سعر الكاش |\n| supplier_id | ✓ | المورد |\n| category_id | ○ | القسم (من الخطوتين أعلاه) |\n| is_active | ○ | true/false |\n| installment_plans[] | ○ | months, down_payment, installment_amount |\n\n**Response:** `data.category` يعرض القسم والنوع المرتبط",
                                 "body": {
                                     "mode": "raw",
-                                    "raw": "{\n  \"name\": \"فلتر\",\n  \"cash_price\": 5000,\n  \"supplier_id\": {{supplier_id}},\n  \"is_active\": true,\n  \"installment_plans\": [{ \"months\": 6, \"down_payment\": 500, \"installment_amount\": 800 }]\n}",
+                                    "raw": "{\n  \"name\": \"فلتر RO\",\n  \"cash_price\": 5000,\n  \"supplier_id\": {{supplier_id}},\n  \"category_id\": {{category_id}},\n  \"is_active\": true,\n  \"installment_plans\": [{ \"months\": 6, \"down_payment\": 500, \"installment_amount\": 800 }]\n}",
                                     "options": {
                                         "raw": {
                                             "language": "json"
@@ -3363,7 +4318,7 @@
                                     ],
                                     "query": null
                                 },
-                                "description": "## GET /super-admin/supplier-products/{supplierProduct}"
+                                "description": "## GET /super-admin/supplier-products/{supplierProduct}\n\n**Response:** supplier + category (مع product_type) + installment_plans"
                             }
                         },
                         {
@@ -3396,10 +4351,10 @@
                                     ],
                                     "query": null
                                 },
-                                "description": "## POST /super-admin/supplier-products/{supplierProduct}",
+                                "description": "## POST /super-admin/supplier-products/{supplierProduct}\n\n**Body:** name, cash_price, category_id, is_active, installment_plans[]\n\nيمكن تغيير `category_id` لنقل المنتج لقسم آخر",
                                 "body": {
                                     "mode": "raw",
-                                    "raw": "{\n  \"name\": \"منتج محدّث\"\n}",
+                                    "raw": "{\n  \"name\": \"منتج محدّث\",\n  \"category_id\": {{category_id}}\n}",
                                     "options": {
                                         "raw": {
                                             "language": "json"
@@ -3710,10 +4665,10 @@
                                     ],
                                     "query": null
                                 },
-                                "description": "## POST /company/products\n\n**Body:** name, cash_price, is_active, installment_plans[] (optional), description, image",
+                                "description": "## POST /company/products\n\n**Body:** name, cash_price, category_id (اختياري — نفس أقسام الأدمن), is_active, installment_plans[], description, image\n\n**ملاحظة:** منتجات الكatalog من المورد ترث category من supplier_product",
                                 "body": {
                                     "mode": "raw",
-                                    "raw": "{\n  \"name\": \"منتج\",\n  \"cash_price\": 1500,\n  \"is_active\": true,\n  \"installment_plans\": [{ \"months\": 6, \"down_payment\": 300, \"installment_amount\": 250 }]\n}",
+                                    "raw": "{\n  \"name\": \"منتج\",\n  \"cash_price\": 1500,\n  \"category_id\": {{category_id}},\n  \"is_active\": true,\n  \"installment_plans\": [{ \"months\": 6, \"down_payment\": 300, \"installment_amount\": 250 }]\n}",
                                     "options": {
                                         "raw": {
                                             "language": "json"
@@ -4260,7 +5215,7 @@
                                     ],
                                     "query": null
                                 },
-                                "description": "## POST /company/orders\n\n**Body:** customer_id, payment_type (cash|installment), items[], discount, notes, source, idempotency_key\n\n**cash:** بدون installment_plan\n\n**installment:** منتج واحد + installment_plan { months, down_payment, installment_amount } من خطط المنتج\n\n**source.channel:** ad | referral | link | direct",
+                                "description": "## POST /company/orders\n\n**Auth:** Bearer {{company_token}}\n\n### كاش (cash)\n```json\n{\n  \"customer_id\": 1,\n  \"payment_type\": \"cash\",\n  \"items\": [{ \"company_product_id\": 1, \"quantity\": 1 }],\n  \"source\": { \"channel\": \"direct\" },\n  \"idempotency_key\": \"co-cash-001\"\n}\n```\n\n### تقسيط (installment)\n- **منتج واحد فقط** في `items`\n- `installment_plan` يجب أن **يطابق** خطة معرّفة على المنتج (من GET installment-plans)\n- `total_amount` = مقدم + (أقساط × عدد الأشهر)\n\n```json\n{\n  \"customer_id\": 1,\n  \"payment_type\": \"installment\",\n  \"installment_plan\": {\n    \"months\": 6,\n    \"down_payment\": 300,\n    \"installment_amount\": 250\n  },\n  \"items\": [{ \"company_product_id\": 1, \"quantity\": 1 }],\n  \"source\": { \"channel\": \"direct\" },\n  \"idempotency_key\": \"co-installment-001\"\n}\n```\n\n**Response:** `payment_type`, `installment_plan` (مع remaining_amount و total_amount), `total_amount`",
                                 "body": {
                                     "mode": "raw",
                                     "raw": "{\n  \"customer_id\": {{customer_id}},\n  \"payment_type\": \"cash\",\n  \"items\": [{ \"company_product_id\": {{product_id}}, \"quantity\": 1 }],\n  \"source\": { \"channel\": \"direct\" },\n  \"idempotency_key\": \"co-001\"\n}",
@@ -4774,7 +5729,7 @@
                                     ],
                                     "query": null
                                 },
-                                "description": "## POST /customer/orders\n\n**Body:** company_id, payment_type, items[], source, idempotency_key\n\n**cash:** payment_type=cash بدون installment_plan\n\n**installment:** payment_type=installment + installment_plan { months, down_payment, installment_amount } + منتج واحد\n\nيتطلب ربط active مع الشركة",
+                                "description": "## POST /customer/orders\n\n**Auth:** Bearer {{customer_token}} — يتطلب ربط active مع الشركة\n\n### كاش\n```json\n{\n  \"company_id\": 1,\n  \"payment_type\": \"cash\",\n  \"items\": [{ \"company_product_id\": 1, \"quantity\": 1 }],\n  \"source\": { \"channel\": \"link\" },\n  \"idempotency_key\": \"cu-cash-001\"\n}\n```\n\n### تقسيط\n1. `GET /public/companies/{id}/products/{id}/installment-plans`\n2. اختر خطة وانسخ القيم الثلاث\n3. أرسل طلباً بمنتج **واحد** + `payment_type: installment`\n\n```json\n{\n  \"company_id\": 1,\n  \"payment_type\": \"installment\",\n  \"installment_plan\": {\n    \"months\": 6,\n    \"down_payment\": 300,\n    \"installment_amount\": 250\n  },\n  \"items\": [{ \"company_product_id\": 1, \"quantity\": 1 }],\n  \"source\": { \"channel\": \"link\" },\n  \"idempotency_key\": \"cu-installment-001\"\n}\n```\n\n**أخطاء شائعة:** خطة غير موجودة على المنتج → 422 على `installment_plan` | أكثر من منتج → 422 على `items`",
                                 "body": {
                                     "mode": "raw",
                                     "raw": "{\n  \"company_id\": {{company_id}},\n  \"payment_type\": \"cash\",\n  \"items\": [{ \"company_product_id\": {{product_id}}, \"quantity\": 1 }],\n  \"source\": { \"channel\": \"link\" },\n  \"idempotency_key\": \"cu-001\"\n}",

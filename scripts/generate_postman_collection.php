@@ -102,6 +102,30 @@ function saveIdFromData(string $var): array
     ]];
 }
 
+/** Save first list item id from response.data[], optionally match by field value. */
+function saveFirstFromDataList(string $var, ?string $matchField = null, ?string $matchValue = null): array
+{
+    $find = 'var item = res.data && res.data[0];';
+
+    if ($matchField !== null && $matchValue !== null) {
+        $find = "var item = (res.data || []).find(function(x) { return x.{$matchField} === '{$matchValue}'; }); if (!item && res.data && res.data[0]) item = res.data[0];";
+    }
+
+    return [[
+        'listen' => 'test',
+        'script' => [
+            'type' => 'text/javascript',
+            'exec' => [
+                "if (pm.response.code >= 200 && pm.response.code < 300) {",
+                "  var res = pm.response.json();",
+                "  {$find}",
+                "  if (item && item.id) pm.collectionVariables.set(\"{$var}\", String(item.id));",
+                "}",
+            ],
+        ],
+    ]];
+}
+
 function folder(string $name, string $description, array $items): array
 {
     return ['name' => $name, 'description' => $description, 'item' => $items];
@@ -137,12 +161,12 @@ function allEndpoints(): array
         ],
         endpointKey('GET', 'public/product-types') => [
             'method' => 'GET', 'path' => 'public/product-types', 'name' => 'GET Product Types',
-            'description' => "## GET /public/product-types\n\n**Auth:** لا\n\n**Response:** device | accessories | stages للفلترة",
+            'description' => "## GET /public/product-types\n\n**Auth:** لا\n\n**Response:** قائمة الأنواع (device | accessories | stages)\n\n**استخدمها:** اختر `product_type_id` ثم اطلب الأقسام المناسبة",
             'headers' => $h($accept), 'body' => null, 'query' => [], 'event' => null,
         ],
         endpointKey('GET', 'public/categories') => [
             'method' => 'GET', 'path' => 'public/categories', 'name' => 'GET Categories',
-            'description' => "## GET /public/categories\n\n**Auth:** لا\n\n**Query:** product_type_id, parent_category_id (0=جذر), number_of_stages",
+            'description' => "## GET /public/categories\n\n**Auth:** لا\n\n**Query:**\n| Param | الوصف |\n|-------|--------|\n| product_type_id | نوع المنتج (مطلوب للفلترة) |\n| parent_category_id | 0 = أقسام جذر فقط |\n| number_of_stages | لأقسام المراحل (1–8) |\n\n**استخدمها:** اختر `category_id` لعرض منتجات المتجر",
             'headers' => $h($accept), 'body' => null, 'query' => ['product_type_id' => '{{product_type_id}}', 'parent_category_id' => '0'], 'event' => null,
         ],
         endpointKey('GET', 'public/companies') => [
@@ -162,7 +186,32 @@ function allEndpoints(): array
         ],
         endpointKey('GET', 'public/companies/{{company_id}}/products/{{product_id}}/installment-plans') => [
             'method' => 'GET', 'path' => 'public/companies/{{company_id}}/products/{{product_id}}/installment-plans', 'name' => 'GET Product Installment Plans',
-            'description' => "## GET /public/companies/{company}/products/{companyProduct}/installment-plans\n\n**Auth:** لا\n\n**Response:** cash_price + plans[] مع remaining_amount و total_amount\n\nاستخدم قبل زر \"قسط من هنا\"",
+            'description' => <<<MD
+## GET /public/companies/{company}/products/{companyProduct}/installment-plans
+
+**Auth:** لا
+
+**الخطوة 1** قبل زر «قسّط من هنا» — يعرض خطط المنتج مع حسابات جاهزة:
+
+```json
+{
+  "data": {
+    "product": { "id": 1, "name": "...", "cash_price": 1500, "has_installment": true },
+    "plans": [
+      {
+        "months": 6,
+        "down_payment": 300,
+        "installment_amount": 250,
+        "remaining_amount": 1500,
+        "total_amount": 1800
+      }
+    ]
+  }
+}
+```
+
+**استخدم:** انسخ `months`, `down_payment`, `installment_amount` كما هي في `installment_plan` عند إنشاء الطلب
+MD,
             'headers' => $h($accept), 'body' => null, 'query' => [], 'event' => null,
         ],
         endpointKey('GET', 'public/maintenance/lookups') => [
@@ -199,12 +248,12 @@ function allEndpoints(): array
         // ── Super Admin Product Types (5) ──
         endpointKey('GET', 'super-admin/product-types') => [
             'method' => 'GET', 'path' => 'super-admin/product-types', 'name' => 'GET List Product Types',
-            'description' => "## GET /super-admin/product-types\n\n**Auth:** Bearer {{super_admin_token}}",
-            'headers' => $h($accept, $a('super_admin_token')), 'body' => null, 'query' => [], 'event' => null,
+            'description' => "## GET /super-admin/product-types\n\n**Auth:** Bearer {{super_admin_token}}\n\n**الخطوة 1** قبل إضافة منتج مورد: اعرض الأنواع وخزّن `product_type_id`\n\n**Seeder:** device, accessories, stages",
+            'headers' => $h($accept, $a('super_admin_token')), 'body' => null, 'query' => [], 'event' => saveFirstFromDataList('product_type_id', 'name', 'device'),
         ],
         endpointKey('POST', 'super-admin/product-types') => [
             'method' => 'POST', 'path' => 'super-admin/product-types', 'name' => 'POST Create Product Type',
-            'description' => "## POST /super-admin/product-types\n\n**Body:** name (unique slug), name_ar",
+            'description' => "## POST /super-admin/product-types\n\n**Body:** name (slug فريد), name_ar\n\n**مثال:** device → فلتر مياه",
             'headers' => $h($accept, $a('super_admin_token'), $json),
             'body' => $rb("{\n  \"name\": \"device\",\n  \"name_ar\": \"فلتر مياه\"\n}"),
             'query' => [], 'event' => saveIdFromData('product_type_id'),
@@ -230,12 +279,12 @@ function allEndpoints(): array
         // ── Super Admin Categories (5) ──
         endpointKey('GET', 'super-admin/categories') => [
             'method' => 'GET', 'path' => 'super-admin/categories', 'name' => 'GET List Categories',
-            'description' => "## GET /super-admin/categories\n\n**Query:** product_type_id, parent_category_id (0=جذر), search, per_page",
-            'headers' => $h($accept, $a('super_admin_token')), 'body' => null, 'query' => ['per_page' => '50', 'product_type_id' => '{{product_type_id}}'], 'event' => null,
+            'description' => "## GET /super-admin/categories\n\n**Auth:** Bearer {{super_admin_token}}\n\n**الخطوة 2** قبل إضافة منتج مورد: فلتر بـ `product_type_id` وخزّن `category_id`\n\n**Query:** product_type_id, parent_category_id (0=جذر), search, per_page\n\n**Seeder:** RO devices, cartridge, اصلاح, stage one…",
+            'headers' => $h($accept, $a('super_admin_token')), 'body' => null, 'query' => ['per_page' => '50', 'product_type_id' => '{{product_type_id}}', 'parent_category_id' => '0'], 'event' => saveFirstFromDataList('category_id', 'name', 'RO devices'),
         ],
         endpointKey('POST', 'super-admin/categories') => [
             'method' => 'POST', 'path' => 'super-admin/categories', 'name' => 'POST Create Category',
-            'description' => "## POST /super-admin/categories\n\n**Body:** name, parent_category_id (0=جذر), product_type_id, number_of_stages",
+            'description' => "## POST /super-admin/categories\n\n**Body:**\n| Field | الوصف |\n|-------|--------|\n| name | اسم القسم |\n| product_type_id | نوع المنتج |\n| parent_category_id | 0 = قسم جذر |\n| number_of_stages | للمراحل الفرعية (1–8) أو 0 |",
             'headers' => $h($accept, $a('super_admin_token'), $json),
             'body' => $rb("{\n  \"name\": \"RO devices\",\n  \"parent_category_id\": 0,\n  \"product_type_id\": {{product_type_id}},\n  \"number_of_stages\": 0\n}"),
             'query' => [], 'event' => saveIdFromData('category_id'),
@@ -382,26 +431,53 @@ function allEndpoints(): array
         // ── Super Admin Supplier Products (6) ──
         endpointKey('GET', 'super-admin/supplier-products') => [
             'method' => 'GET', 'path' => 'super-admin/supplier-products', 'name' => 'GET List Supplier Products',
-            'description' => "## GET /super-admin/supplier-products\n\n**Query:** supplier_id, is_active",
-            'headers' => $h($accept, $a('super_admin_token')), 'body' => null, 'query' => ['supplier_id' => '{{supplier_id}}'], 'event' => null,
+            'description' => "## GET /super-admin/supplier-products\n\n**Query:** supplier_id, is_active, category_id, product_type_id\n\n**Response:** كل منتج يتضمن `category` مع `product_type`",
+            'headers' => $h($accept, $a('super_admin_token')), 'body' => null,
+            'query' => [
+                'supplier_id'     => '{{supplier_id}}',
+                'category_id'     => ['key' => 'category_id', 'value' => '{{category_id}}', 'disabled' => true],
+                'product_type_id' => ['key' => 'product_type_id', 'value' => '{{product_type_id}}', 'disabled' => true],
+            ],
+            'event' => null,
         ],
         endpointKey('POST', 'super-admin/supplier-products') => [
             'method' => 'POST', 'path' => 'super-admin/supplier-products', 'name' => 'POST Create Supplier Product',
-            'description' => "## POST /super-admin/supplier-products\n\n**Body:** name, cash_price, supplier_id, installment_plans[]",
+            'description' => <<<MD
+## POST /super-admin/supplier-products
+
+**Auth:** Bearer {{super_admin_token}}
+
+### مسار الإدخال (Admin UI)
+1. `GET /super-admin/product-types` → اختر نوع (`device` | `accessories` | `stages`)
+2. `GET /super-admin/categories?product_type_id=` → اختر قسم (`category_id`)
+3. أرسل هذا الطلب مع `category_id`
+
+### Body
+| Field | مطلوب | الوصف |
+|-------|--------|--------|
+| name | ✓ | اسم المنتج |
+| cash_price | ✓ | سعر الكاش |
+| supplier_id | ✓ | المورد |
+| category_id | ○ | القسم (من الخطوتين أعلاه) |
+| is_active | ○ | true/false |
+| installment_plans[] | ○ | months, down_payment, installment_amount |
+
+**Response:** `data.category` يعرض القسم والنوع المرتبط
+MD,
             'headers' => $h($accept, $a('super_admin_token'), $json),
-            'body' => $rb("{\n  \"name\": \"فلتر\",\n  \"cash_price\": 5000,\n  \"supplier_id\": {{supplier_id}},\n  \"is_active\": true,\n  \"installment_plans\": [{ \"months\": 6, \"down_payment\": 500, \"installment_amount\": 800 }]\n}"),
+            'body' => $rb("{\n  \"name\": \"فلتر RO\",\n  \"cash_price\": 5000,\n  \"supplier_id\": {{supplier_id}},\n  \"category_id\": {{category_id}},\n  \"is_active\": true,\n  \"installment_plans\": [{ \"months\": 6, \"down_payment\": 500, \"installment_amount\": 800 }]\n}"),
             'query' => [], 'event' => saveIdFromData('supplier_product_id'),
         ],
         endpointKey('GET', 'super-admin/supplier-products/{{supplier_product_id}}') => [
             'method' => 'GET', 'path' => 'super-admin/supplier-products/{{supplier_product_id}}', 'name' => 'GET Show Supplier Product',
-            'description' => "## GET /super-admin/supplier-products/{supplierProduct}",
+            'description' => "## GET /super-admin/supplier-products/{supplierProduct}\n\n**Response:** supplier + category (مع product_type) + installment_plans",
             'headers' => $h($accept, $a('super_admin_token')), 'body' => null, 'query' => [], 'event' => null,
         ],
         endpointKey('POST', 'super-admin/supplier-products/{{supplier_product_id}}') => [
             'method' => 'POST', 'path' => 'super-admin/supplier-products/{{supplier_product_id}}', 'name' => 'POST Update Supplier Product',
-            'description' => "## POST /super-admin/supplier-products/{supplierProduct}",
+            'description' => "## POST /super-admin/supplier-products/{supplierProduct}\n\n**Body:** name, cash_price, category_id, is_active, installment_plans[]\n\nيمكن تغيير `category_id` لنقل المنتج لقسم آخر",
             'headers' => $h($accept, $a('super_admin_token'), $json),
-            'body' => $rb("{\n  \"name\": \"منتج محدّث\"\n}"), 'query' => [], 'event' => null,
+            'body' => $rb("{\n  \"name\": \"منتج محدّث\",\n  \"category_id\": {{category_id}}\n}"), 'query' => [], 'event' => null,
         ],
         endpointKey('PATCH', 'super-admin/supplier-products/{{supplier_product_id}}/toggle-status') => [
             'method' => 'PATCH', 'path' => 'super-admin/supplier-products/{{supplier_product_id}}/toggle-status', 'name' => 'PATCH Toggle Product Status',
@@ -453,9 +529,9 @@ function allEndpoints(): array
         ],
         endpointKey('POST', 'company/products') => [
             'method' => 'POST', 'path' => 'company/products', 'name' => 'POST Create Product',
-            'description' => "## POST /company/products\n\n**Body:** name, cash_price, is_active, installment_plans[] (optional), description, image",
+            'description' => "## POST /company/products\n\n**Body:** name, cash_price, category_id (اختياري — نفس أقسام الأدمن), is_active, installment_plans[], description, image\n\n**ملاحظة:** منتجات الكatalog من المورد ترث category من supplier_product",
             'headers' => $h($accept, $a('company_token'), $json),
-            'body' => $rb("{\n  \"name\": \"منتج\",\n  \"cash_price\": 1500,\n  \"is_active\": true,\n  \"installment_plans\": [{ \"months\": 6, \"down_payment\": 300, \"installment_amount\": 250 }]\n}"),
+            'body' => $rb("{\n  \"name\": \"منتج\",\n  \"cash_price\": 1500,\n  \"category_id\": {{category_id}},\n  \"is_active\": true,\n  \"installment_plans\": [{ \"months\": 6, \"down_payment\": 300, \"installment_amount\": 250 }]\n}"),
             'query' => [], 'event' => saveIdFromData('product_id'),
         ],
         endpointKey('GET', 'company/products/{{product_id}}') => [
@@ -540,7 +616,44 @@ function allEndpoints(): array
         ],
         endpointKey('POST', 'company/orders') => [
             'method' => 'POST', 'path' => 'company/orders', 'name' => 'POST Create Order',
-            'description' => "## POST /company/orders\n\n**Body:** customer_id, payment_type (cash|installment), items[], discount, notes, source, idempotency_key\n\n**cash:** بدون installment_plan\n\n**installment:** منتج واحد + installment_plan { months, down_payment, installment_amount } من خطط المنتج\n\n**source.channel:** ad | referral | link | direct",
+            'description' => <<<MD
+## POST /company/orders
+
+**Auth:** Bearer {{company_token}}
+
+### كاش (cash)
+```json
+{
+  "customer_id": 1,
+  "payment_type": "cash",
+  "items": [{ "company_product_id": 1, "quantity": 1 }],
+  "source": { "channel": "direct" },
+  "idempotency_key": "co-cash-001"
+}
+```
+
+### تقسيط (installment)
+- **منتج واحد فقط** في `items`
+- `installment_plan` يجب أن **يطابق** خطة معرّفة على المنتج (من GET installment-plans)
+- `total_amount` = مقدم + (أقساط × عدد الأشهر)
+
+```json
+{
+  "customer_id": 1,
+  "payment_type": "installment",
+  "installment_plan": {
+    "months": 6,
+    "down_payment": 300,
+    "installment_amount": 250
+  },
+  "items": [{ "company_product_id": 1, "quantity": 1 }],
+  "source": { "channel": "direct" },
+  "idempotency_key": "co-installment-001"
+}
+```
+
+**Response:** `payment_type`, `installment_plan` (مع remaining_amount و total_amount), `total_amount`
+MD,
             'headers' => $h($accept, $a('company_token'), $json),
             'body' => $rb("{\n  \"customer_id\": {{customer_id}},\n  \"payment_type\": \"cash\",\n  \"items\": [{ \"company_product_id\": {{product_id}}, \"quantity\": 1 }],\n  \"source\": { \"channel\": \"direct\" },\n  \"idempotency_key\": \"co-001\"\n}"),
             'query' => [], 'event' => saveIdFromData('order_id'),
@@ -618,7 +731,44 @@ function allEndpoints(): array
         ],
         endpointKey('POST', 'customer/orders') => [
             'method' => 'POST', 'path' => 'customer/orders', 'name' => 'POST Create Order',
-            'description' => "## POST /customer/orders\n\n**Body:** company_id, payment_type, items[], source, idempotency_key\n\n**cash:** payment_type=cash بدون installment_plan\n\n**installment:** payment_type=installment + installment_plan { months, down_payment, installment_amount } + منتج واحد\n\nيتطلب ربط active مع الشركة",
+            'description' => <<<MD
+## POST /customer/orders
+
+**Auth:** Bearer {{customer_token}} — يتطلب ربط active مع الشركة
+
+### كاش
+```json
+{
+  "company_id": 1,
+  "payment_type": "cash",
+  "items": [{ "company_product_id": 1, "quantity": 1 }],
+  "source": { "channel": "link" },
+  "idempotency_key": "cu-cash-001"
+}
+```
+
+### تقسيط
+1. `GET /public/companies/{id}/products/{id}/installment-plans`
+2. اختر خطة وانسخ القيم الثلاث
+3. أرسل طلباً بمنتج **واحد** + `payment_type: installment`
+
+```json
+{
+  "company_id": 1,
+  "payment_type": "installment",
+  "installment_plan": {
+    "months": 6,
+    "down_payment": 300,
+    "installment_amount": 250
+  },
+  "items": [{ "company_product_id": 1, "quantity": 1 }],
+  "source": { "channel": "link" },
+  "idempotency_key": "cu-installment-001"
+}
+```
+
+**أخطاء شائعة:** خطة غير موجودة على المنتج → 422 على `installment_plan` | أكثر من منتج → 422 على `items`
+MD,
             'headers' => $h($accept, $a('customer_token'), $json),
             'body' => $rb("{\n  \"company_id\": {{company_id}},\n  \"payment_type\": \"cash\",\n  \"items\": [{ \"company_product_id\": {{product_id}}, \"quantity\": 1 }],\n  \"source\": { \"channel\": \"link\" },\n  \"idempotency_key\": \"cu-001\"\n}"),
             'query' => [], 'event' => saveIdFromData('order_id'),
@@ -731,10 +881,58 @@ php artisan serve
 ```
 
 1. Import هذا الملف في Postman
-2. شغّل **00 — Setup Flow** (11 خطوة)
-3. استخدم مجلد **All Endpoints** لأي endpoint
+2. شغّل **00 — Setup Flow** (13 خطوة)
+3. راجع **01 — Product Catalog Flow** لفهم الأنواع والأقسام
+4. استخدم مجلد **All Endpoints** لأي endpoint
 
 **Super Admin:** `admin@watafl.com` / `Admin@1234`
+
+---
+
+## كatalog المنتجات (أنواع + أقسام)
+
+```
+أنواع (Product Types)     →  device | accessories | stages
+        ↓
+أقسام (Categories)        →  RO devices, cartridge, stage one…
+        ↓
+منتج مورد (Supplier Product)  →  category_id مطلوب عند الإضافة
+        ↓
+متجر الشركة (Company Product / Catalog)
+```
+
+| الخطوة | Endpoint | المتغير |
+|--------|----------|---------|
+| 1 | GET /super-admin/product-types | product_type_id |
+| 2 | GET /super-admin/categories?product_type_id= | category_id |
+| 3 | POST /super-admin/supplier-products | supplier_product_id |
+| 4 | POST /company/catalog/add | — |
+| 5 | GET /public/companies/{id}/products?category_id= | — |
+
+**Seeder:** `php artisan migrate --seed` يملأ الأنواع والأقسام من `types table.txt` و `categoriesTable.txt`
+
+---
+
+## الطلب بالتقسيط (Installment)
+
+```
+تعريف خطط على المنتج (Admin/Company)  →  installment_plans[]
+        ↓
+عرض للعميل (Public)  →  GET .../installment-plans
+        ↓
+إنشاء الطلب  →  payment_type: installment + installment_plan { months, down_payment, installment_amount }
+```
+
+| القاعدة | التفاصيل |
+|---------|----------|
+| منتج واحد | طلب التقسيط = item واحد فقط |
+| تطابق الخطة | القيم الثلاث يجب أن تطابق خطة معرّفة على المنتج |
+| total_amount | مقدم + (قسط × عدد الأشهر) — يُحسب ويُخزَّن في الطلب |
+| كاش | لا ترسل `installment_plan` مع `payment_type: cash` |
+
+**مدد مسموحة:** 3, 6, 9, 12, 18, 24 شهر (حسب `CompanyProductInstallmentPlan`)
+
+**Postman:** شغّل **05 — Installment Order Flow** بعد Setup Flow
 
 ---
 
@@ -799,7 +997,7 @@ MD,
 ];
 
 // Setup Flow
-$setup = folder('00 — Setup Flow', "إعداد بيئة اختبار — شغّل بالترتيب\n\nيملأ: super_admin_token, company_id, governorate_id, supplier_id, supplier_product_id, product_id, customer_id, customer_token, order_id", [
+$setup = folder('00 — Setup Flow', "إعداد بيئة اختبار — شغّل بالترتيب\n\nيملأ: super_admin_token, company_id, governorate_id, supplier_id, product_type_id, category_id, supplier_product_id, product_id, customer_id, customer_token, order_id", [
     named('1. Super Admin Login', buildRequestFromEndpoint($endpoints[endpointKey('POST', 'super-admin/login')])),
     named('2. Get Governorates', array_replace(buildRequestFromEndpoint($endpoints[endpointKey('GET', 'super-admin/governorates')]), [
         'event' => [[
@@ -812,15 +1010,46 @@ $setup = folder('00 — Setup Flow', "إعداد بيئة اختبار — شغ�
     named('3. Create Company', buildRequestFromEndpoint($endpoints[endpointKey('POST', 'super-admin/companies')])),
     named('4. Credit Wallet', req('POST', 'super-admin/companies/{{company_id}}/wallet/adjust', $endpoints[endpointKey('POST', 'super-admin/companies/{{company_id}}/wallet/adjust')]['description'], $endpoints[endpointKey('POST', 'super-admin/companies/{{company_id}}/wallet/adjust')]['headers'], rawBody("{\n  \"amount\": 1000,\n  \"type\": \"credit\",\n  \"reason\": \"رصيد افتتاحي\",\n  \"idempotency_key\": \"setup-credit\"\n}"))),
     named('5. Create Supplier', buildRequestFromEndpoint($endpoints[endpointKey('POST', 'super-admin/suppliers')])),
-    named('6. Create Supplier Product', buildRequestFromEndpoint($endpoints[endpointKey('POST', 'super-admin/supplier-products')])),
-    named('7. Company Login', buildRequestFromEndpoint($endpoints[endpointKey('POST', 'company/login')])),
-    named('8. Add to Catalog', buildRequestFromEndpoint($endpoints[endpointKey('POST', 'company/catalog/add')])),
-    named('9. Create Company Product', buildRequestFromEndpoint($endpoints[endpointKey('POST', 'company/products')])),
-    named('10. Register Customer', buildRequestFromEndpoint($endpoints[endpointKey('POST', 'customer/register')])),
-    named('11. Company Create Order', buildRequestFromEndpoint($endpoints[endpointKey('POST', 'company/orders')])),
+    named('6. List Product Types → save product_type_id', buildRequestFromEndpoint($endpoints[endpointKey('GET', 'super-admin/product-types')])),
+    named('7. List Categories → save category_id', buildRequestFromEndpoint($endpoints[endpointKey('GET', 'super-admin/categories')])),
+    named('8. Create Supplier Product (with category_id)', buildRequestFromEndpoint($endpoints[endpointKey('POST', 'super-admin/supplier-products')])),
+    named('9. Company Login', buildRequestFromEndpoint($endpoints[endpointKey('POST', 'company/login')])),
+    named('10. Add to Catalog', buildRequestFromEndpoint($endpoints[endpointKey('POST', 'company/catalog/add')])),
+    named('11. Create Company Product', buildRequestFromEndpoint($endpoints[endpointKey('POST', 'company/products')])),
+    named('12. Register Customer', buildRequestFromEndpoint($endpoints[endpointKey('POST', 'customer/register')])),
+    named('13. Company Create Order', buildRequestFromEndpoint($endpoints[endpointKey('POST', 'company/orders')])),
 ]);
 
-$withdrawalFlow = folder('01 — Withdrawal Flow', 'سيناريو سحب كامل', [
+$catalogFlow = folder('01 — Product Catalog Flow', "سيناريو الأنواع والأقسام عند إضافة منتجات الموردين\n\nشغّل بعد migrate --seed\n\nيملأ: product_type_id, category_id, supplier_product_id", [
+    named('1. Super Admin Login', buildRequestFromEndpoint($endpoints[endpointKey('POST', 'super-admin/login')])),
+    named('2. List Product Types', buildRequestFromEndpoint($endpoints[endpointKey('GET', 'super-admin/product-types')])),
+    named('3. List Categories (by type)', buildRequestFromEndpoint($endpoints[endpointKey('GET', 'super-admin/categories')])),
+    named('4. Create Supplier (if needed)', buildRequestFromEndpoint($endpoints[endpointKey('POST', 'super-admin/suppliers')])),
+    named('5. Create Supplier Product', buildRequestFromEndpoint($endpoints[endpointKey('POST', 'super-admin/supplier-products')])),
+    named('6. Verify Supplier Product', buildRequestFromEndpoint($endpoints[endpointKey('GET', 'super-admin/supplier-products/{{supplier_product_id}}')])),
+    named('7. Filter by category_id', array_replace(buildRequestFromEndpoint($endpoints[endpointKey('GET', 'super-admin/supplier-products')]), [
+        'request' => array_replace(
+            buildRequestFromEndpoint($endpoints[endpointKey('GET', 'super-admin/supplier-products')])['request'],
+            ['url' => url('super-admin/supplier-products', [
+                'supplier_id' => '{{supplier_id}}',
+                'category_id' => '{{category_id}}',
+            ])]
+        ),
+    ])),
+    named('8. Public Product Types', buildRequestFromEndpoint($endpoints[endpointKey('GET', 'public/product-types')])),
+    named('9. Public Categories', buildRequestFromEndpoint($endpoints[endpointKey('GET', 'public/categories')])),
+    named('10. Store Products by category', array_replace(buildRequestFromEndpoint($endpoints[endpointKey('GET', 'public/companies/{{company_id}}/products')]), [
+        'request' => array_replace(
+            buildRequestFromEndpoint($endpoints[endpointKey('GET', 'public/companies/{{company_id}}/products')])['request'],
+            ['url' => url('public/companies/{{company_id}}/products', [
+                'page'        => '1',
+                'category_id' => '{{category_id}}',
+            ])]
+        ),
+    ])),
+]);
+
+$withdrawalFlow = folder('02 — Withdrawal Flow', 'سيناريو سحب كامل', [
     named('1. Company Login', buildRequestFromEndpoint($endpoints[endpointKey('POST', 'company/login')])),
     named('2. Request Withdrawal', buildRequestFromEndpoint($endpoints[endpointKey('POST', 'company/wallet/withdrawals')])),
     named('3. Admin Login', buildRequestFromEndpoint($endpoints[endpointKey('POST', 'super-admin/login')])),
@@ -830,7 +1059,7 @@ $withdrawalFlow = folder('01 — Withdrawal Flow', 'سيناريو سحب كام
     named('7. Transactions', buildRequestFromEndpoint($endpoints[endpointKey('GET', 'company/wallet/transactions')])),
 ]);
 
-$customerFlow = folder('02 — Customer Flow', 'تسجيل عميل + ملف + عملاء الشركة', [
+$customerFlow = folder('03 — Customer Flow', 'تسجيل عميل + ملف + عملاء الشركة', [
     named('1. Register', buildRequestFromEndpoint($endpoints[endpointKey('POST', 'customer/register')])),
     named('2. Me', buildRequestFromEndpoint($endpoints[endpointKey('GET', 'customer/me')])),
     named('3. Update Profile', buildRequestFromEndpoint($endpoints[endpointKey('PATCH', 'customer/profile')])),
@@ -838,22 +1067,50 @@ $customerFlow = folder('02 — Customer Flow', 'تسجيل عميل + ملف + �
     named('5. List Company Customers', buildRequestFromEndpoint($endpoints[endpointKey('GET', 'company/customers')])),
 ]);
 
-$orderFlow = folder('03 — Order Flow', 'طلب → processing → completed + عمولة', [
+$orderFlow = folder('04 — Order Flow (Cash)', 'طلب كاش → processing → completed + عمولة', [
     named('1. Company Login', buildRequestFromEndpoint($endpoints[endpointKey('POST', 'company/login')])),
-    named('2. Create Order', buildRequestFromEndpoint($endpoints[endpointKey('POST', 'company/orders')])),
+    named('2. Create Cash Order', buildRequestFromEndpoint($endpoints[endpointKey('POST', 'company/orders')])),
     named('3. Status → processing', req('PATCH', 'company/orders/{{order_id}}/status', $endpoints[endpointKey('PATCH', 'company/orders/{{order_id}}/status')]['description'], $endpoints[endpointKey('PATCH', 'company/orders/{{order_id}}/status')]['headers'], rawBody("{\n  \"status\": \"processing\"\n}"))),
     named('4. Status → completed', buildRequestFromEndpoint($endpoints[endpointKey('PATCH', 'company/orders/{{order_id}}/status')])),
     named('5. Customer List Orders', buildRequestFromEndpoint($endpoints[endpointKey('GET', 'customer/orders')])),
     named('6. Admin List Orders', buildRequestFromEndpoint($endpoints[endpointKey('GET', 'super-admin/orders')])),
 ]);
 
-$publicFlow = folder('04 — Public Store Flow', 'تصفح بدون تسجيل', [
-    named('1. Governorates', buildRequestFromEndpoint($endpoints[endpointKey('GET', 'public/governorates')])),
-    named('2. Maintenance Lookups', buildRequestFromEndpoint($endpoints[endpointKey('GET', 'public/maintenance/lookups')])),
-    named('3. Companies', buildRequestFromEndpoint($endpoints[endpointKey('GET', 'public/companies')])),
-    named('4. Company Details', buildRequestFromEndpoint($endpoints[endpointKey('GET', 'public/companies/{{company_id}}')])),
-    named('5. Store Products', buildRequestFromEndpoint($endpoints[endpointKey('GET', 'public/companies/{{company_id}}/products')])),
-    named('6. Product Installment Plans', buildRequestFromEndpoint($endpoints[endpointKey('GET', 'public/companies/{{company_id}}/products/{{product_id}}/installment-plans')])),
+$installmentFlow = folder('05 — Installment Order Flow', "طلب بالتقسيط — شغّل **00 Setup Flow** أولاً\n\nالمنتج في Setup فيه خطة: 6 أشهر، مقدم 300، قسط 250\n\nيملأ: order_id", [
+    named('1. Get Installment Plans (Public)', buildRequestFromEndpoint($endpoints[endpointKey('GET', 'public/companies/{{company_id}}/products/{{product_id}}/installment-plans')])),
+    named('2. Customer Login', buildRequestFromEndpoint($endpoints[endpointKey('POST', 'customer/login')])),
+    named('3. Customer Installment Order', req(
+        'POST',
+        'customer/orders',
+        $endpoints[endpointKey('POST', 'customer/orders')]['description'],
+        $endpoints[endpointKey('POST', 'customer/orders')]['headers'],
+        rawBody("{\n  \"company_id\": {{company_id}},\n  \"payment_type\": \"installment\",\n  \"installment_plan\": {\n    \"months\": 6,\n    \"down_payment\": 300,\n    \"installment_amount\": 250\n  },\n  \"items\": [{ \"company_product_id\": {{product_id}}, \"quantity\": 1 }],\n  \"source\": { \"channel\": \"link\" },\n  \"idempotency_key\": \"cu-installment-001\"\n}"),
+        [],
+        saveIdFromData('order_id')
+    )),
+    named('4. Show Installment Order', buildRequestFromEndpoint($endpoints[endpointKey('GET', 'customer/orders/{{order_id}}')])),
+    named('5. Company Login', buildRequestFromEndpoint($endpoints[endpointKey('POST', 'company/login')])),
+    named('6. Company Installment Order', req(
+        'POST',
+        'company/orders',
+        $endpoints[endpointKey('POST', 'company/orders')]['description'],
+        $endpoints[endpointKey('POST', 'company/orders')]['headers'],
+        rawBody("{\n  \"customer_id\": {{customer_id}},\n  \"payment_type\": \"installment\",\n  \"installment_plan\": {\n    \"months\": 6,\n    \"down_payment\": 300,\n    \"installment_amount\": 250\n  },\n  \"items\": [{ \"company_product_id\": {{product_id}}, \"quantity\": 1 }],\n  \"source\": { \"channel\": \"direct\" },\n  \"idempotency_key\": \"co-installment-001\"\n}"),
+        [],
+        saveIdFromData('order_id')
+    )),
+    named('7. Complete Installment Order', buildRequestFromEndpoint($endpoints[endpointKey('PATCH', 'company/orders/{{order_id}}/status')])),
+]);
+
+$publicFlow = folder('06 — Public Store Flow', 'تصفح بدون تسجيل — يشمل فلترة بالأقسام وخطط التقسيط', [
+    named('1. Product Types', buildRequestFromEndpoint($endpoints[endpointKey('GET', 'public/product-types')])),
+    named('2. Categories', buildRequestFromEndpoint($endpoints[endpointKey('GET', 'public/categories')])),
+    named('3. Governorates', buildRequestFromEndpoint($endpoints[endpointKey('GET', 'public/governorates')])),
+    named('4. Maintenance Lookups', buildRequestFromEndpoint($endpoints[endpointKey('GET', 'public/maintenance/lookups')])),
+    named('5. Companies', buildRequestFromEndpoint($endpoints[endpointKey('GET', 'public/companies')])),
+    named('6. Company Details', buildRequestFromEndpoint($endpoints[endpointKey('GET', 'public/companies/{{company_id}}')])),
+    named('7. Store Products', buildRequestFromEndpoint($endpoints[endpointKey('GET', 'public/companies/{{company_id}}/products')])),
+    named('8. Product Installment Plans', buildRequestFromEndpoint($endpoints[endpointKey('GET', 'public/companies/{{company_id}}/products/{{product_id}}/installment-plans')])),
 ]);
 
 $allEndpointsFolder = folder('All Endpoints', "كل الـ {$total} endpoint — واحد لكل route في routes/api.php\n\nافتح Description لأي request للتفاصيل الكاملة", [
@@ -873,14 +1130,14 @@ $allEndpointsFolder = folder('All Endpoints', "كل الـ {$total} endpoint —
         endpointKey('GET', 'super-admin/me'),
     ], $endpoints),
     buildEndpointFolder('Super Admin — Governorates (1)', '', [endpointKey('GET', 'super-admin/governorates')], $endpoints),
-    buildEndpointFolder('Super Admin — Product Types (5)', '', [
+    buildEndpointFolder('Super Admin — Product Types (5)', 'أنواع المنتج — الخطوة 1 قبل إضافة منتج مورد', [
         endpointKey('GET', 'super-admin/product-types'),
         endpointKey('POST', 'super-admin/product-types'),
         endpointKey('GET', 'super-admin/product-types/{{product_type_id}}'),
         endpointKey('POST', 'super-admin/product-types/{{product_type_id}}'),
         endpointKey('DELETE', 'super-admin/product-types/{{product_type_id}}'),
     ], $endpoints),
-    buildEndpointFolder('Super Admin — Categories (5)', '', [
+    buildEndpointFolder('Super Admin — Categories (5)', 'أقسام المنتج — الخطوة 2 (category_id)', [
         endpointKey('GET', 'super-admin/categories'),
         endpointKey('POST', 'super-admin/categories'),
         endpointKey('GET', 'super-admin/categories/{{category_id}}'),
@@ -915,7 +1172,7 @@ $allEndpointsFolder = folder('All Endpoints', "كل الـ {$total} endpoint —
         endpointKey('POST', 'super-admin/suppliers/{{supplier_id}}'),
         endpointKey('DELETE', 'super-admin/suppliers/{{supplier_id}}'),
     ], $endpoints),
-    buildEndpointFolder('Super Admin — Supplier Products (6)', '', [
+    buildEndpointFolder('Super Admin — Supplier Products (6)', 'منتجات المورد — أرسل category_id من الأقسام', [
         endpointKey('GET', 'super-admin/supplier-products'),
         endpointKey('POST', 'super-admin/supplier-products'),
         endpointKey('GET', 'super-admin/supplier-products/{{supplier_product_id}}'),
@@ -990,9 +1247,11 @@ $allEndpointsFolder = folder('All Endpoints', "كل الـ {$total} endpoint —
 
 $collection['item'] = [
     $setup,
+    $catalogFlow,
     $withdrawalFlow,
     $customerFlow,
     $orderFlow,
+    $installmentFlow,
     $publicFlow,
     $allEndpointsFolder,
 ];

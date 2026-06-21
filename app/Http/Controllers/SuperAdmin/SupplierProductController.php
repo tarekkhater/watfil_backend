@@ -26,6 +26,16 @@ class SupplierProductController extends Controller
             $query->where('is_active', $request->boolean('is_active'));
         }
 
+        if ($request->filled('category_id')) {
+            $query->where('category_id', (int) $request->input('category_id'));
+        }
+
+        if ($request->filled('product_type_id')) {
+            $typeId = (int) $request->input('product_type_id');
+
+            $query->whereHas('category', fn ($categoryQuery) => $categoryQuery->where('product_type_id', $typeId));
+        }
+
         $products = $query->latest()->paginate(15);
 
         return response()->json([

@@ -45,6 +45,7 @@ class StoreCompanyProductRequest extends FormRequest
             'name.required'                         => 'اسم المنتج مطلوب',
             'cash_price.required'                   => 'سعر الكاش مطلوب',
             'cash_price.numeric'                    => 'سعر الكاش يجب أن يكون رقمًا',
+            'category_id.exists'                    => 'الصنف غير موجود',
             'installment_plans.*.months.required'   => 'مدة التقسيط مطلوبة',
             'installment_plans.*.months.in'         => 'مدة التقسيط غير مسموحة',
             'installment_plans.*.months.distinct'   => 'لا يمكن تكرار نفس مدة التقسيط',

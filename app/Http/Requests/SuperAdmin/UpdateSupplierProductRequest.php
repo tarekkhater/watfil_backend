@@ -45,6 +45,7 @@ class UpdateSupplierProductRequest extends FormRequest
         return [
             'cash_price.numeric'                    => 'سعر الكاش يجب أن يكون رقمًا',
             'supplier_id.exists'                    => 'المورد غير موجود',
+            'category_id.exists'                      => 'الصنف غير موجود',
             'installment_plans.*.months.required'   => 'مدة التقسيط مطلوبة',
             'installment_plans.*.months.in'         => 'مدة التقسيط غير مسموحة',
             'installment_plans.*.months.distinct'   => 'لا يمكن تكرار نفس مدة التقسيط',
